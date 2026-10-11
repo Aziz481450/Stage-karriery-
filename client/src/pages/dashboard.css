@@ -1,0 +1,339 @@
+/* ============================================================
+   Karriery — Dashboards (style TailAdmin, rouge Karriery)
+   Tous les styles sont préfixés .app .content .dash pour ne rien
+   casser ailleurs. Aucune dépendance, aucun !important.
+   ============================================================ */
+
+.app .content .dash {
+  --brand: #E0183F;
+  --brand-600: #C0102F;
+  --brand-50: #FFF1F3;
+  --card: #FFFFFF;
+  --bg: #F9FAFB;
+  --line: #E4E7EC;
+  --ink: #101828;
+  --mute: #667085;
+  --g100: #F2F4F7;
+  --g200: #E4E7EC;
+  --g400: #98A2B3;
+  --g500: #667085;
+  --g700: #344054;
+  --g900: #101828;
+  --ok: #12B76A;   --ok-bg: #ECFDF3;   --ok-tx: #027A48;
+  --warn: #F79009; --warn-bg: #FFFAEB; --warn-tx: #B54708;
+  --bad: #F04438;  --bad-bg: #FEF3F2;  --bad-tx: #B42318;
+  --info: #2E90FA; --info-bg: #EFF8FF; --info-tx: #175CD3;
+  --r: 16px;
+  --sh: 0 1px 2px rgba(16, 24, 40, .05);
+
+  display: grid;
+  gap: 24px;
+  font-family: Outfit, system-ui, -apple-system, "Segoe UI", sans-serif;
+  color: var(--ink);
+}
+
+/* ---------- Mode sombre ---------- */
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) .app .content .dash {
+    --card: #1D2939; --bg: #0C111D; --line: #344054;
+    --ink: #F2F4F7; --mute: #98A2B3;
+    --g100: #1D2939; --g200: #344054; --g400: #98A2B3; --g500: #98A2B3; --g700: #D0D5DD; --g900: #F2F4F7;
+  }
+}
+:root[data-theme="dark"] .app .content .dash {
+  --card: #1D2939; --bg: #0C111D; --line: #344054;
+  --ink: #F2F4F7; --mute: #98A2B3;
+  --g100: #1D2939; --g200: #344054; --g400: #98A2B3; --g500: #98A2B3; --g700: #D0D5DD; --g900: #F2F4F7;
+}
+
+/* ---------- En-tête de page ---------- */
+.app .content .dash .dash-head { display: flex; align-items: center; justify-content: space-between; gap: 16px; flex-wrap: wrap; }
+.app .content .dash .breadcrumb { font-size: 13px; color: var(--mute); display: flex; align-items: center; gap: 6px; margin-bottom: 6px; }
+.app .content .dash .breadcrumb b { color: var(--ink); font-weight: 500; }
+.app .content .dash .dash-head h1 { font-size: 22px; font-weight: 600; letter-spacing: -.02em; color: var(--ink); margin: 0; }
+.app .content .dash .dash-head .head-act { display: flex; align-items: center; gap: 12px; }
+
+/* ---------- Grille 12 colonnes ---------- */
+.app .content .dash .dash-grid { display: grid; grid-template-columns: repeat(12, 1fr); gap: 24px; }
+.app .content .dash > *,
+.app .content .dash .dash-grid > * { min-width: 0; }
+.app .content .dash .span-7 { grid-column: span 7; }
+.app .content .dash .span-5 { grid-column: span 5; }
+.app .content .dash .span-12 { grid-column: span 12; }
+.app .content .dash .span-4 { grid-column: span 4; }
+.app .content .dash .span-6 { grid-column: span 6; }
+
+/* ---------- Cartes ---------- */
+.app .content .dash .card {
+  background: var(--card); border: 1px solid var(--line); border-radius: var(--r);
+  box-shadow: var(--sh); padding: 22px;
+}
+.app .content .dash .card > h3 { font-size: 16px; font-weight: 600; color: var(--ink); margin: 0 0 4px; letter-spacing: -.01em; }
+.app .content .dash .card .card-hint { font-size: 13px; color: var(--mute); margin: 0 0 18px; }
+.app .content .dash .card .card-hint:last-child { margin-bottom: 0; }
+
+/* ---------- Cartes chiffres (Metric) ---------- */
+.app .content .dash .metrics { display: grid; grid-template-columns: repeat(2, 1fr); gap: 24px; }
+.app .content .dash .metric { background: var(--card); border: 1px solid var(--line); border-radius: var(--r); box-shadow: var(--sh); padding: 22px; display: flex; flex-direction: column; gap: 12px; }
+.app .content .dash .metric-top { display: flex; align-items: center; justify-content: space-between; }
+.app .content .dash .metric-ic { width: 48px; height: 48px; border-radius: 12px; background: var(--g100); color: var(--g700); display: grid; place-items: center; flex: none; }
+.app .content .dash .metric-val { font-size: 30px; font-weight: 600; letter-spacing: -.02em; line-height: 1; color: var(--ink); }
+.app .content .dash .metric-lbl { font-size: 14px; color: var(--mute); }
+
+/* Delta / évolution */
+.app .content .dash .delta { display: inline-flex; align-items: center; gap: 4px; font-size: 12px; font-weight: 600; padding: 3px 9px; border-radius: 99px; }
+.app .content .dash .delta.up { background: var(--ok-bg); color: var(--ok-tx); }
+.app .content .dash .delta.down { background: var(--bad-bg); color: var(--bad-tx); }
+.app .content .dash .delta.flat { background: var(--g100); color: var(--mute); }
+
+/* ---------- Badges de statut ---------- */
+.app .content .dash .sbadge { display: inline-flex; align-items: center; gap: 6px; font-size: 12px; font-weight: 500; padding: 3px 10px; border-radius: 99px; white-space: nowrap; }
+.app .content .dash .sbadge::before { content: ""; width: 6px; height: 6px; border-radius: 50%; background: currentColor; }
+.app .content .dash .sbadge.en_attente { background: var(--warn-bg); color: var(--warn-tx); }
+.app .content .dash .sbadge.en_cours { background: var(--info-bg); color: var(--info-tx); }
+.app .content .dash .sbadge.terminee { background: var(--ok-bg); color: var(--ok-tx); }
+.app .content .dash .sbadge.annulee { background: var(--g100); color: var(--mute); }
+.app .content .dash .sbadge.refusee { background: var(--bad-bg); color: var(--bad-tx); }
+
+/* Ancien badge générique conservé pour les autres pages */
+.app .content .dash .badge { display: inline-flex; align-items: center; gap: 6px; font-size: 12px; font-weight: 600; padding: 3px 10px; border-radius: 99px; background: var(--g100); color: var(--mute); }
+.app .content .dash .badge.en_attente { background: var(--warn-bg); color: var(--warn-tx); }
+.app .content .dash .badge.en_cours { background: var(--info-bg); color: var(--info-tx); }
+.app .content .dash .badge.terminee { background: var(--ok-bg); color: var(--ok-tx); }
+.app .content .dash .badge.annulee { background: var(--g100); color: var(--mute); }
+.app .content .dash .badge.refusee { background: var(--bad-bg); color: var(--bad-tx); }
+
+/* ---------- Boutons ---------- */
+.app .content .dash .cta {
+  display: inline-flex; align-items: center; justify-content: center; gap: 8px;
+  background: var(--brand); color: #fff; border: 0; border-radius: 8px;
+  padding: 10px 16px; font: inherit; font-weight: 600; font-size: 14px; cursor: pointer;
+  text-decoration: none; box-shadow: none; transition: background .15s;
+}
+.app .content .dash .cta:hover:not(:disabled) { background: var(--brand-600); }
+.app .content .dash .cta:disabled { opacity: .55; cursor: not-allowed; }
+.app .content .dash .cta.sm { padding: 8px 13px; font-size: 13px; }
+.app .content .dash .ghost {
+  display: inline-flex; align-items: center; justify-content: center; gap: 8px;
+  background: var(--card); color: var(--ink); border: 1px solid var(--line);
+  border-radius: 8px; padding: 10px 16px; font: inherit; font-weight: 600; font-size: 14px;
+  cursor: pointer; text-decoration: none; box-shadow: none; transition: background .15s, border-color .15s;
+}
+.app .content .dash .ghost:hover:not(:disabled) { background: var(--g100); }
+.app .content .dash .ghost:disabled { opacity: .55; cursor: not-allowed; }
+.app .content .dash .ghost.sm { padding: 8px 13px; font-size: 13px; }
+.app .content .dash .ghost.refuse { color: var(--bad-tx); border-color: var(--bad-bg); }
+.app .content .dash .ghost.refuse:hover { background: var(--bad-bg); }
+
+/* ---------- Graphiques ---------- */
+.app .content .dash .chart { display: block; width: 100%; height: auto; overflow: visible; }
+.app .content .dash .chart .grid-line { stroke: var(--line); stroke-width: 1; }
+.app .content .dash .chart .axis-txt { fill: var(--mute); font-size: 11px; font-family: inherit; }
+.app .content .dash .chart .bar { fill: var(--brand); }
+.app .content .dash .chart .bar.soft { fill: var(--brand-50); }
+.app .content .dash .chart .area-fill { fill: url(#dgr); }
+.app .content .dash .chart .area-line { fill: none; stroke: var(--brand); stroke-width: 2.5; stroke-linejoin: round; stroke-linecap: round; }
+.app .content .dash .chart .dot { fill: var(--card); stroke: var(--brand); stroke-width: 2.5; }
+
+/* ---------- Jauge demi-cercle ---------- */
+.app .content .dash .gauge-wrap { display: flex; flex-direction: column; align-items: center; gap: 4px; }
+.app .content .dash .gauge { display: block; width: min(240px, 100%); height: auto; }
+.app .content .dash .gauge .track { fill: none; stroke: var(--g100); stroke-width: 16; stroke-linecap: round; }
+.app .content .dash .gauge .fill { fill: none; stroke: var(--brand); stroke-width: 16; stroke-linecap: round; }
+.app .content .dash .gauge .g-val { fill: var(--ink); font-size: 26px; font-weight: 600; font-family: inherit; }
+.app .content .dash .gauge .g-sub { fill: var(--mute); font-size: 11px; font-family: inherit; }
+.app .content .dash .gauge-foot { display: grid; grid-template-columns: repeat(3, 1fr); width: 100%; margin-top: 14px; }
+.app .content .dash .gauge-foot > div { text-align: center; padding: 4px 8px; }
+.app .content .dash .gauge-foot > div + div { border-left: 1px solid var(--line); }
+.app .content .dash .gauge-foot b { display: block; font-size: 16px; font-weight: 600; color: var(--ink); }
+.app .content .dash .gauge-foot small { font-size: 12px; color: var(--mute); }
+
+/* ---------- Répartition (barres de progression) ---------- */
+.app .content .dash .rep { display: grid; gap: 16px; }
+.app .content .dash .rep-row { display: grid; grid-template-columns: 96px 1fr 40px; align-items: center; gap: 12px; font-size: 13px; }
+.app .content .dash .rep-row span { color: var(--mute); }
+.app .content .dash .rep-bar { height: 8px; border-radius: 99px; background: var(--g100); overflow: hidden; }
+.app .content .dash .rep-bar i { display: block; height: 100%; border-radius: 99px; background: var(--brand); }
+.app .content .dash .rep-row b { text-align: right; font-weight: 600; color: var(--ink); }
+
+/* ---------- Tableau ---------- */
+.app .content .dash .dtable { width: 100%; border-collapse: collapse; }
+.app .content .dash .dtable th { font-size: 12px; font-weight: 500; text-transform: uppercase; letter-spacing: .04em; color: var(--mute); text-align: left; padding: 10px 12px; border-bottom: 1px solid var(--line); }
+.app .content .dash .dtable td { padding: 14px 12px; border-bottom: 1px solid var(--line); font-size: 14px; color: var(--g700); }
+.app .content .dash .dtable tbody tr:last-child td { border-bottom: 0; }
+.app .content .dash .dtable tbody tr:hover td { background: var(--g100); }
+.app .content .dash .dtable .t-strong { font-weight: 600; color: var(--ink); }
+.app .content .dash .dtable .t-strong:hover { color: var(--brand); }
+
+/* ---------- Barre d'outils (filtres + recherche) ---------- */
+.app .content .dash .toolbar { display: flex; align-items: center; justify-content: space-between; gap: 12px; flex-wrap: wrap; margin-bottom: 18px; }
+.app .content .dash .tabs-s { display: flex; gap: 4px; background: var(--g100); padding: 4px; border-radius: 10px; flex-wrap: wrap; }
+.app .content .dash .tabs-s button { border: 0; background: none; padding: 8px 13px; border-radius: 8px; font: inherit; font-size: 13px; font-weight: 600; color: var(--mute); cursor: pointer; display: inline-flex; align-items: center; gap: 6px; }
+.app .content .dash .tabs-s button.on { background: var(--card); color: var(--ink); box-shadow: var(--sh); }
+.app .content .dash .tabs-s button i { font-style: normal; background: var(--g200); color: var(--mute); border-radius: 99px; padding: 1px 7px; font-size: 11px; }
+.app .content .dash .search { display: flex; align-items: center; gap: 8px; background: var(--card); border: 1px solid var(--line); border-radius: 10px; padding: 9px 12px; min-width: 220px; color: var(--mute); }
+.app .content .dash .search input { border: 0; outline: 0; background: none; font: inherit; font-size: 14px; color: var(--ink); width: 100%; }
+
+/* ---------- Lignes "dossier" (liste) ---------- */
+.app .content .dash .job { position: relative; background: var(--card); border: 1px solid var(--line); border-radius: var(--r); box-shadow: var(--sh); padding: 18px 20px; margin-bottom: 12px; }
+.app .content .dash .job-top { display: flex; align-items: center; gap: 14px; }
+.app .content .dash .job-av { width: 44px; height: 44px; border-radius: 12px; background: var(--brand-50); color: var(--brand); display: grid; place-items: center; flex: none; }
+.app .content .dash .job-id { flex: 1; min-width: 0; }
+.app .content .dash .job-id h3 { font-size: 15px; font-weight: 600; color: var(--ink); margin: 0; }
+.app .content .dash .job-sub { font-size: 13px; color: var(--mute); margin: 2px 0 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.app .content .dash .job-foot { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; margin-top: 14px; padding-top: 14px; border-top: 1px solid var(--line); }
+.app .content .dash .job-foot .cta.sm { margin-left: auto; }
+.app .content .dash .job.sk { height: 116px; border: 0; background: linear-gradient(100deg, var(--g100) 30%, var(--card) 50%, var(--g100) 70%); background-size: 220% 100%; animation: dsk 1.4s linear infinite; }
+@keyframes dsk { to { background-position: -220% 0; } }
+
+/* ---------- Chips ---------- */
+.app .content .dash .chip { display: inline-flex; align-items: center; gap: 6px; font-size: 12px; font-weight: 500; color: var(--mute); background: var(--g100); border: 1px solid var(--line); border-radius: 99px; padding: 3px 10px; }
+.app .content .dash .chip.sc.ok { color: var(--ok-tx); background: var(--ok-bg); border-color: transparent; }
+.app .content .dash .chip.sc.warn { color: var(--warn-tx); background: var(--warn-bg); border-color: transparent; }
+.app .content .dash .chip.sc.bad { color: var(--bad-tx); background: var(--bad-bg); border-color: transparent; }
+.app .content .dash .chip.tt { color: var(--warn-tx); background: var(--warn-bg); border-color: transparent; }
+.app .content .dash .chip.st.en_cours { color: var(--info-tx); background: var(--info-bg); border-color: transparent; }
+.app .content .dash .chip.st.terminee { color: var(--ok-tx); background: var(--ok-bg); border-color: transparent; }
+.app .content .dash .chip.st.annulee { color: var(--mute); background: var(--g100); }
+
+/* ---------- États ---------- */
+.app .content .dash .state { text-align: center; padding: 44px 20px; background: var(--card); border: 1px dashed var(--line); border-radius: var(--r); display: grid; gap: 8px; justify-items: center; }
+.app .content .dash .state b { color: var(--ink); font-weight: 600; }
+.app .content .dash .err { color: var(--bad-tx); font-weight: 500; }
+.app .content .dash .empty-h { display: flex; align-items: center; justify-content: space-between; gap: 20px; flex-wrap: wrap; background: var(--card); border: 1px solid var(--line); border-radius: var(--r); box-shadow: var(--sh); padding: 20px 22px; }
+.app .content .dash .eh-hero { display: flex; align-items: center; gap: 16px; min-width: 0; }
+.app .content .dash .eh-ic { width: 54px; height: 54px; border-radius: 14px; background: var(--brand-50); color: var(--brand); display: grid; place-items: center; flex: none; }
+.app .content .dash .eh-hero b { display: block; font-size: 16px; font-weight: 600; color: var(--ink); margin-bottom: 2px; }
+.app .content .dash .eh-hero p { margin: 0; max-width: 460px; font-size: 13px; }
+
+/* ---------- KPI (compat) ---------- */
+.app .content .dash .kpis { display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 20px; }
+.app .content .dash .kpi { background: var(--card); border: 1px solid var(--line); border-radius: var(--r); box-shadow: var(--sh); padding: 20px; display: grid; gap: 4px; }
+.app .content .dash .kpi strong { font-size: 26px; font-weight: 600; color: var(--ink); }
+.app .content .dash .kpi small { color: var(--mute); font-size: 13px; }
+
+/* ---------- Détail de dossier ---------- */
+.app .content .dash .back { display: inline-flex; align-items: center; gap: 6px; font-size: 14px; font-weight: 600; color: var(--brand); text-decoration: none; }
+.app .content .dash .back:hover { color: var(--brand-600); }
+.app .content .dash .detail { display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: 20px; align-items: center; background: var(--card); border: 1px solid var(--line); border-radius: var(--r); box-shadow: var(--sh); padding: 24px; }
+.app .content .dash .detail .eyebrow { display: inline-flex; align-items: center; gap: 8px; font-size: 12px; font-weight: 600; text-transform: uppercase; letter-spacing: .06em; color: var(--brand); margin-bottom: 0; animation: none; }
+.app .content .dash .detail .eyebrow::before { display: none; }
+.app .content .dash .detail h1 { font-size: 22px; font-weight: 600; color: var(--ink); margin: 8px 0 12px; letter-spacing: -.02em; }
+.app .content .dash .chips { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 16px; }
+.app .content .dash .redac { display: flex; align-items: center; gap: 12px; }
+.app .content .dash .mini-av { width: 42px; height: 42px; border-radius: 12px; flex: none; display: grid; place-items: center; font-weight: 600; color: #fff; background: var(--brand); overflow: hidden; }
+.app .content .dash .mini-av img { width: 100%; height: 100%; object-fit: cover; display: block; }
+.app .content .dash .redac small { display: block; font-size: 12px; color: var(--mute); }
+.app .content .dash .redac b { display: block; font-size: 15px; color: var(--ink); font-weight: 600; }
+.app .content .dash .score-ct { display: grid; justify-items: center; gap: 6px; background: var(--g100); border-radius: var(--r); padding: 18px 22px; }
+.app .content .dash .score-ct small { color: var(--mute); font-size: 12px; font-weight: 500; }
+.app .content .dash .ring-lg { width: 112px; height: 112px; }
+.app .content .dash .ring-lg .rb { fill: none; stroke: var(--g200); stroke-width: 10; }
+.app .content .dash .ring-lg .rf { fill: none; stroke: var(--brand); stroke-width: 10; stroke-linecap: round; transition: stroke-dashoffset .9s cubic-bezier(.2, .8, .2, 1); }
+.app .content .dash .ring-lg .rf.ok { stroke: var(--ok); }
+.app .content .dash .ring-lg .rf.warn { stroke: var(--warn); }
+.app .content .dash .ring-lg .rf.bad { stroke: var(--bad); }
+.app .content .dash .ring-lg text { font-size: 19px; font-weight: 600; fill: var(--ink); }
+.app .content .dash .detail-actions { display: flex; flex-wrap: wrap; gap: 12px; }
+.app .content .dash .note { margin: 0; }
+.app .content .dash .note h3 { margin: 0 0 6px; }
+.app .content .dash .m-act { display: flex; flex-wrap: wrap; gap: 10px; margin-top: 14px; }
+.app .content .dash .info-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(210px, 1fr)); gap: 12px; }
+.app .content .dash .info { display: flex; align-items: center; gap: 12px; background: var(--g100); border-radius: 12px; padding: 12px 14px; }
+.app .content .dash .info svg { color: var(--brand); flex: none; }
+.app .content .dash .info small { display: block; font-size: 11px; font-weight: 500; text-transform: uppercase; letter-spacing: .04em; color: var(--mute); }
+.app .content .dash .info b { color: var(--ink); font-size: 14px; font-weight: 600; }
+.app .content .dash .an-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 20px; }
+.app .content .dash .an-card { background: var(--card); border: 1px solid var(--line); border-radius: var(--r); box-shadow: var(--sh); padding: 20px; }
+.app .content .dash .an-card h3 { display: flex; align-items: center; gap: 10px; font-size: 15px; font-weight: 600; color: var(--ink); margin: 0 0 14px; }
+.app .content .dash .a-ic { width: 30px; height: 30px; border-radius: 9px; flex: none; display: grid; place-items: center; color: #fff; background: var(--ok); }
+.app .content .dash .an-card.warn .a-ic { background: var(--warn); }
+.app .content .dash .an-card.fx .a-ic { background: var(--brand); }
+.app .content .dash .an-card ul { margin: 0; padding-left: 18px; list-style: disc; display: grid; gap: 6px; }
+.app .content .dash .an-card ul li { font-size: 13.5px; line-height: 1.55; color: var(--g700); }
+
+/* ---------- Workflow sollicitation ---------- */
+.app .content .dash .sol { background: var(--card); border: 1px solid var(--line); border-radius: var(--r); box-shadow: var(--sh); padding: 18px; }
+.app .content .dash .sol-top { display: flex; align-items: center; gap: 12px; }
+.app .content .dash .sol-top .job-id { flex: 1; min-width: 0; }
+.app .content .dash .sol-top h3 { font-size: 15px; color: var(--ink); margin: 0; font-weight: 600; }
+.app .content .dash .sol-act { display: flex; gap: 10px; margin-top: 14px; flex-wrap: wrap; }
+
+/* ---------- Analyse IA (accordéon) ---------- */
+.app .content .dash .llm { margin-top: 14px; }
+.app .content .dash .llm-btn { width: 100%; display: flex; align-items: center; gap: 10px; background: var(--g100); border: 1px solid var(--line); border-radius: 10px; padding: 10px 14px; font: inherit; font-weight: 600; font-size: 13px; color: var(--g700); cursor: pointer; text-align: left; }
+.app .content .dash .llm-btn:hover { border-color: var(--brand); color: var(--brand); }
+.app .content .dash .llm-btn .chev { margin-left: auto; display: grid; place-items: center; transition: transform .2s; }
+.app .content .dash .llm-btn.open .chev { transform: rotate(180deg); }
+.app .content .dash .llm-count { display: inline-flex; align-items: center; gap: 6px; }
+.app .content .dash .llm-count i { font-style: normal; background: var(--card); border: 1px solid var(--line); border-radius: 99px; padding: 1px 8px; font-size: 11px; font-weight: 500; }
+.app .content .dash .llm-body { margin-top: 12px; }
+.app .content .dash .llm-cols { display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 12px; }
+.app .content .dash .llm-c { background: var(--g100); border-radius: 12px; padding: 14px; }
+.app .content .dash .llm-c h4 { display: flex; align-items: center; gap: 8px; margin: 0 0 10px; font-size: 13px; font-weight: 600; color: var(--ink); }
+.app .content .dash .llm-c ul { margin: 0; padding-left: 16px; display: grid; gap: 6px; font-size: 13px; line-height: 1.5; color: var(--g700); }
+.app .content .dash .llm-more { margin-top: 12px; display: inline-flex; align-items: center; gap: 6px; font-size: 13px; font-weight: 600; color: var(--brand); text-decoration: none; }
+.app .content .dash .llm-more:hover { text-decoration: underline; }
+.app .content .dash .llm-na { margin: 12px 0 0; font-size: 13px; }
+.app .content .dash .btn-ai { color: var(--brand); border-color: rgba(224, 24, 63, .4); }
+.app .content .dash .btn-ai:hover:not(:disabled) { background: var(--brand-50); border-color: var(--brand); }
+.app .content .dash .ai-note { margin: 4px 0 0; font-size: 12px; color: var(--brand); flex-basis: 100%; }
+.app .content .dash .cv-am { width: 100%; }
+.app .content .dash .cv-am-panel { margin: 10px 0 0; background: var(--brand-50); border: 1px solid #F2C7CF; border-radius: 12px; padding: 12px; }
+.app .content .dash .cv-am-head { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; margin-bottom: 8px; }
+.app .content .dash .cv-am-head b { color: var(--brand-600); font-size: 13px; display: flex; align-items: center; gap: 6px; }
+.app .content .dash .cv-am-text { background: var(--card); border: 1px solid var(--line); border-radius: 10px; padding: 12px; font-size: 13px; line-height: 1.55; color: var(--g700); white-space: pre-wrap; max-height: 340px; overflow: auto; margin: 0; }
+
+/* ---------- Modale d'upload / dépôt CV ---------- */
+.app .content .dash .modal-bg { position: fixed; inset: 0; z-index: 100; background: rgba(16, 24, 40, .55); backdrop-filter: blur(6px); -webkit-backdrop-filter: blur(6px); display: grid; place-items: center; padding: 20px; }
+.app .content .dash .modal { width: min(520px, 100%); background: var(--card); border: 1px solid var(--line); border-radius: var(--r); box-shadow: 0 30px 70px -30px rgba(16, 24, 40, .5); padding: 28px; }
+.app .content .dash .modal h2 { font-size: 20px; font-weight: 600; color: var(--ink); margin: 0 0 8px; letter-spacing: -.02em; }
+.app .content .dash .modal .muted { font-size: 13.5px; margin: 0 0 18px; }
+.app .content .dash .dz { display: flex; flex-direction: column; align-items: center; gap: 8px; text-align: center; background: var(--g100); border: 1.5px dashed var(--line); border-radius: 14px; padding: 28px 20px; cursor: pointer; color: var(--mute); transition: border-color .15s, background .15s; }
+.app .content .dash .dz:hover, .app .content .dash .dz.on { border-color: var(--brand); background: var(--brand-50); }
+.app .content .dash .dz svg { color: var(--brand); }
+.app .content .dash .dz b { color: var(--ink); font-weight: 600; font-size: 14px; }
+.app .content .dash .dz small { font-size: 12px; }
+.app .content .dash .bar-p { height: 8px; background: var(--g100); border-radius: 99px; overflow: hidden; margin-top: 16px; }
+.app .content .dash .bar-p i { display: block; height: 100%; background: var(--brand); border-radius: 99px; transition: width .2s; }
+.app .content .dash .cvform { display: flex; flex-direction: column; gap: 10px; align-items: flex-start; }
+.app .content .dash .cvrow { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; }
+.app .content .dash .cv-pick { display: inline-flex; align-items: center; gap: 8px; background: var(--card); border: 1.5px dashed var(--line); border-radius: 10px; padding: 9px 14px; font: inherit; font-size: 13px; font-weight: 600; color: var(--g700); cursor: pointer; max-width: 250px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.app .content .dash .cv-pick:hover { border-color: var(--brand); color: var(--brand); }
+.app .content .dash .cv-bar { width: 160px; }
+
+/* ---------- Profil (compat) ---------- */
+.app .content .dash .prof-lines { display: grid; gap: 8px; }
+.app .content .dash .prof-lines span { display: inline-flex; align-items: center; gap: 8px; font-size: 13px; font-weight: 500; color: var(--g700); background: var(--g100); border-radius: 10px; padding: 8px 12px; }
+.app .content .dash .prof-lines span svg { color: var(--brand); flex: none; }
+
+/* ---------- Interrupteur de disponibilité ---------- */
+.app .content .dash .avail { display: inline-flex; align-items: center; gap: 10px; font-size: 14px; font-weight: 600; color: var(--ink); }
+.app .content .dash .switch { width: 46px; height: 26px; border-radius: 99px; border: 1px solid var(--line); background: var(--g200); position: relative; cursor: pointer; padding: 0; transition: background .15s, border-color .15s; flex: none; }
+.app .content .dash .switch i { position: absolute; top: 2px; left: 2px; width: 20px; height: 20px; border-radius: 50%; background: #fff; box-shadow: var(--sh); transition: transform .15s; }
+.app .content .dash .switch.on { background: var(--brand); border-color: var(--brand); }
+.app .content .dash .switch.on i { transform: translateX(20px); }
+.app .content .dash .switch:disabled { opacity: .5; cursor: not-allowed; }
+
+/* ============================================================
+   Responsive
+   ============================================================ */
+@media (max-width: 1180px) {
+  .app .content .dash .dash-grid { grid-template-columns: 1fr; }
+  .app .content .dash .span-7, .app .content .dash .span-5,
+  .app .content .dash .span-6, .app .content .dash .span-4,
+  .app .content .dash .span-12 { grid-column: 1 / -1; }
+}
+@media (max-width: 860px) {
+  .app .content .dash .dtable { display: block; overflow-x: auto; white-space: nowrap; }
+}
+@media (max-width: 700px) {
+  .app .content .dash .metrics { grid-template-columns: 1fr; }
+  .app .content .dash .detail { grid-template-columns: 1fr; justify-items: start; }
+  .app .content .dash .rep-row { grid-template-columns: 78px 1fr 34px; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .app .content .dash .job.sk,
+  .app .content .dash .job,
+  .app .content .dash .kpi { animation: none; }
+}

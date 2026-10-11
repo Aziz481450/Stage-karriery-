@@ -1,0 +1,36 @@
+services:
+  - type: web
+    name: karriery
+    runtime: node
+    plan: free
+    region: frankfurt
+    buildCommand: npm --prefix client install && npm --prefix client run build && npm --prefix server install
+    startCommand: node server/src/server.js
+    healthCheckPath: /api/health
+    envVars:
+      - key: NODE_VERSION
+        value: "20.11.1"
+      - key: JWT_SECRET
+        generateValue: true
+      - key: DB_SSL
+        value: "true"
+      - key: CLIENT_URL
+        sync: false
+      - key: DB_HOST
+        sync: false
+      - key: DB_PORT
+        sync: false
+      - key: DB_USER
+        sync: false
+      - key: DB_PASSWORD
+        sync: false
+      - key: DB_NAME
+        sync: false
+      - key: LLM_BASE_URL
+        value: https://api.groq.com/openai/v1
+      - key: LLM_MODEL
+        value: llama-3.3-70b-versatile
+      - key: LLM_ASSISTANT_MODEL
+        value: llama-3.1-8b-instant
+      - key: LLM_API_KEY
+        sync: false

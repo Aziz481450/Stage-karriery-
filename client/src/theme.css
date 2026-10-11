@@ -1,0 +1,54 @@
+/* ==========================================================
+   THÈME « KARRIERY » — ROUGE & BLANC (marque #E0183F)
+   Importé APRÈS premium.css : recolorie sans casser les animations.
+   ========================================================== */
+:root {
+  --red: #E0183F;
+  --red-2: #ff5b76;
+  --red-d: #B30F30;
+  --red-soft: #fdeef1;
+  --red-line: #f2c7cf;
+  --navy: #E0183F;          /* sidebar rouge */
+  --navy-active: #B30F30;
+  --blue: #E0183F;
+  --blue-link: #B30F30;
+  --blue-2: #ff5b76;
+  --text: #1a1d2b;
+  --muted: #6b7080;
+  --line: #f0d9de;
+  --bg: #faf7f8;
+  --panel: #fdeef1;
+  --white: #fff;
+  --radius: 10px;
+  --font: "Inter", system-ui, -apple-system, "Segoe UI", sans-serif;
+  --brand: #E0183F;
+  --brand-d: #B30F30;
+  --ink: #1a1d2b;
+  --mute: #6b7080;
+  --soft: #fdeef1;
+  --ok: #22b455;
+  --warn: #b97900;
+  --bad: #e8393f;
+}
+body { font-family: var(--font); background: var(--bg); }
+
+/* ---------- Layout (sidebar & colonnes gérées par shell.css) ---------- */
+.app { background: var(--bg); }
+.app .av { background: linear-gradient(135deg,#E0183F,#ff5b76); box-shadow: 0 8px 16px -8px rgba(224,24,63,.6); }
+.app .bell-n { background: linear-gradient(135deg,#E0183F,#ff5b76); }
+
+/* ---------- Boutons : rouge officiel ---------- */
+.app .cta { background: linear-gradient(135deg,#E0183F,#ff5b76); box-shadow: 0 16px 30px -14px rgba(224,24,63,.55); }
+.app .cta:hover { filter: brightness(1.08); }
+.app .cta.ghost { background: #fff; color: var(--brand); border: 1.5px solid #f4c3cd; box-shadow: none; }
+.app .cta.ghost:hover { background: #fdeef1; border-color: var(--brand); }
+.app .bar-p i { background: linear-gradient(90deg,#E0183F,#ff5b76); }
+
+/* ---------- Onglets actifs ---------- */
+.app .tabs-s .on { background: linear-gradient(135deg,#E0183F,#ff5b76); box-shadow: 0 12px 22px -10px rgba(224,24,63,.5); }
+.app .content .tabs button.on, .app .content .roles.admin-tabs button.on { background: linear-gradient(135deg,#E0183F,#ff5b76); }
+
+/* ---------- Détail & divers ---------- */
+.app .detail .eyebrow { color: var(--brand); }
+.app .content .link { color: var(--blue-link); }
+.app .prod-bar i { background: linear-gradient(90deg,#E0183F,#ff5b76); }
