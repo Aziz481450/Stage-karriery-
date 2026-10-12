@@ -52,7 +52,7 @@
 /* ---------- Profil (formulaire) ---------- */
 .app .content .grid{background:#fff;border:1px solid #eceef5;border-radius:20px;padding:1.6rem 1.7rem;box-shadow:0 18px 40px -24px rgba(20,24,40,.3)}
 .app .content .grid label{color:#2b3050;font-weight:600}
-.app .content .grid input,.app .content .grid textarea{border-radius:12px;border-color:#e6e8f2;box-shadow:0 6px 14px -12px rgba(20,24,40,.2);transition:border-color .2s,box-shadow .2s}
+.app .content .grid input,.app .content .grid textarea{color:var(--ink);border-radius:12px;border-color:#e6e8f2;box-shadow:0 6px 14px -12px rgba(20,24,40,.2);transition:border-color .2s,box-shadow .2s}
 .app .content .grid input:focus,.app .content .grid textarea:focus{border-color:var(--brand);box-shadow:0 0 0 3px rgba(224,24,63,.14)}
 
 /* ---------- Administration ---------- */
