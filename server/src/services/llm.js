@@ -56,6 +56,11 @@ ${text.slice(0, 12000)}`;
 
 const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
 
+// Sentinel interne : Groq (modèles gpt-oss) échoue par intermittence en mode JSON
+// strict avec « json_validate_failed » (génération vide). On retente alors sans
+// response_format : extractJson sait récupérer le JSON dans le texte.
+class JsonModeError extends Error {}
+
 // Une nouvelle tentative sur erreurs transitoires (5xx, réponse invalide, trop lent).
 const runWithRetry = async (fn, retries = 1, delay = 1500) => {
   let lastErr;
@@ -63,7 +68,8 @@ const runWithRetry = async (fn, retries = 1, delay = 1500) => {
     try { return await fn(); }
     catch (e) {
       lastErr = e;
-      const retryable = !(e instanceof ApiError) || /indisponible|trop lente|incompl\u00e8te|invalide : analyse|erreur \(5/i.test(e.message);
+      const retryable = (!(e instanceof ApiError) && !(e instanceof JsonModeError))
+        || /indisponible|trop lente|incompl\u00e8te|invalide : analyse|erreur \(5/i.test(e.message);
       if (i < retries && retryable) { await sleep(delay); continue; }
       throw e;
     }
@@ -71,15 +77,23 @@ const runWithRetry = async (fn, retries = 1, delay = 1500) => {
   throw lastErr;
 };
 
-const callRemote = async (params) => runWithRetry(() => callRemoteOnce(params));
-const callRemoteOnce = async ({ text, titrePoste }) => {
+const callRemote = async (params) => {
+  try {
+    return await runWithRetry(() => callRemoteOnce({ ...params, jsonMode: true }));
+  } catch (e) {
+    if (e instanceof JsonModeError) return runWithRetry(() => callRemoteOnce({ ...params, jsonMode: false }));
+    throw e;
+  }
+};
+const callRemoteOnce = async ({ text, titrePoste, jsonMode = true }) => {
   // Compatible Groq et Ollama (API OpenAI-compatible) : LLM_BASE_URL ou LLM_API_URL.
   const base = process.env.LLM_API_URL || process.env.LLM_BASE_URL;
+  const isOllama = String(base).includes('11434');
   const key = process.env.LLM_API_KEY || (process.env.LLM_BASE_URL ? 'ollama' : '');
   const model = process.env.LLM_MODEL;
   const url = /\/chat\/completions$/.test(base) ? base : `${base.replace(/\/$/, '')}/chat/completions`;
   const ctrl = new AbortController();
-  const timeout = String(base).includes('11434') ? 120000 : 45000;
+  const timeout = isOllama ? 120000 : 45000;
   const timer = setTimeout(() => ctrl.abort(), timeout);
   try {
     const res = await fetch(url, {
@@ -92,18 +106,26 @@ const callRemoteOnce = async ({ text, titrePoste }) => {
           { role: 'user', content: promptFor(text, titrePoste) }
         ],
         temperature: 0.2,
-        max_tokens: 1000,
+        // Les modèles « raisonneurs » (gpt-oss) consomment des tokens de raisonnement :
+        // un budget trop bas laisse la réponse vide → JSON invalide côté fournisseur.
+        max_tokens: 2048,
         // Ollama produit un JSON plus fiable quand on ne force pas response_format
-        // (avec json_object il renvoie des listes de nombres). Fournisseurs OpenAI-compatibles (Groq…) : on force le JSON.
-        ...(String(base).includes('11434') ? {} : { response_format: { type: 'json_object' } }),
+        // (avec json_object il renvoie des listes de nombres). Groq/OpenAI : on force le JSON.
+        ...(!isOllama && jsonMode ? { response_format: { type: 'json_object' } } : {}),
+        // gpt-oss : borner le raisonnement garantit un JSON complet et accélère la réponse.
+        ...(!isOllama ? { reasoning_effort: 'low' } : {}),
         // Ollama : on garde le modèle chargé pour éviter les froids lents entre appels.
-        ...(String(base).includes('11434') ? { keep_alive: '5m' } : {})
+        ...(isOllama ? { keep_alive: '5m' } : {})
       }),
       signal: ctrl.signal
     });
     if (res.status === 429) throw new ApiError(502, 'Limite du service IA atteinte, réessayez dans une minute.');
     if (res.status === 401) throw new ApiError(502, 'Clé API IA invalide.');
     if (res.status === 404) throw new ApiError(502, 'Modèle IA introuvable : vérifiez LLM_MODEL.');
+    if (res.status === 400 && jsonMode) {
+      const j = await res.json().catch(() => null);
+      if (j?.error?.code === 'json_validate_failed') throw new JsonModeError();
+    }
     if (!res.ok) throw new ApiError(502, `Le service d\u2019analyse IA a répondu avec une erreur (${res.status}).`);
     const data = await res.json();
     const content = data?.choices?.[0]?.message?.content;
@@ -112,9 +134,9 @@ const callRemoteOnce = async ({ text, titrePoste }) => {
     if (!valid) throw new ApiError(502, 'Réponse IA invalide : analyse non enregistrée.');
     return { ...valid, provider: 'llm' };
   } catch (e) {
-    if (e instanceof ApiError) throw e;
+    if (e instanceof ApiError || e instanceof JsonModeError) throw e;
     if (e.name === 'AbortError') throw new ApiError(502, 'Analyse IA trop lente : réessayez dans un instant.');
-    if (/fetch/i.test(e?.message || '') && String(base).includes('11434'))
+    if (/fetch/i.test(e?.message || '') && isOllama)
       throw new ApiError(502, 'Ollama est-il lancé ? (http://localhost:11434)');
     throw new ApiError(502, 'Analyse IA indisponible pour le moment.');
   } finally {
@@ -156,16 +178,23 @@ const localAnalysis = ({ text, titrePoste }) => {
 export async function analyzeCV({ text, titrePoste }) {
   const base = process.env.LLM_API_URL || process.env.LLM_BASE_URL;
   if (base && process.env.LLM_MODEL) {
-    return callRemote({ text, titrePoste });
+    try {
+      return await callRemote({ text, titrePoste });
+    } catch (e) {
+      // Dégradation contrôlée : le dépôt de CV ne doit jamais échouer si l'IA
+      // distante est saturée (limite de débit) ou momentanément indisponible.
+      console.warn(`[llm] analyse distante indisponible, repli local : ${e.message}`);
+    }
   }
-  // Aucun fournisseur configuré : analyse locale déterministe (aucune donnée sort du serveur).
+  // Aucun fournisseur configuré (ou IA distante en échec) : analyse locale déterministe.
   return localAnalysis({ text, titrePoste });
 }
 
 // Appel « texte brut » (pas de schéma JSON) pour la génération du CV amélioré.
 const callTextChat = async (params) => runWithRetry(() => callTextChatOnce(params));
-const callTextChatOnce = async ({ system, prompt, maxTokens = 1700 }) => {
+const callTextChatOnce = async ({ system, prompt, maxTokens = 2048 }) => {
   const base = process.env.LLM_API_URL || process.env.LLM_BASE_URL;
+  const isOllama = String(base).includes('11434');
   const key = process.env.LLM_API_KEY || (process.env.LLM_BASE_URL ? 'ollama' : '');
   const model = process.env.LLM_MODEL;
   const url = /\/chat\/completions$/.test(base) ? base : `${base.replace(/\/$/, '')}/chat/completions`;
@@ -176,7 +205,7 @@ const callTextChatOnce = async ({ system, prompt, maxTokens = 1700 }) => {
     const res = await fetch(url, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${key}` },
-      body: JSON.stringify({ model, messages: [{ role: 'system', content: system }, { role: 'user', content: prompt }], temperature: 0.4, max_tokens: maxTokens, ...(String(base).includes('11434') ? { keep_alive: '5m' } : {}) })
+      body: JSON.stringify({ model, messages: [{ role: 'system', content: system }, { role: 'user', content: prompt }], temperature: 0.4, max_tokens: maxTokens, ...(!isOllama ? { reasoning_effort: 'low' } : {}), ...(isOllama ? { keep_alive: '5m' } : {}) })
     });
     if (res.status === 404) throw new ApiError(502, 'Modèle IA introuvable : vérifiez LLM_MODEL.');
     if (!res.ok) throw new ApiError(502, `Le service IA a répondu avec une erreur (${res.status}).`);
@@ -231,9 +260,15 @@ Intègre si possible ces recommandations (sans en inventer le contenu) : ${recom
 
 CV d'origine :
 ${text.slice(0, 3500)}`;
-    const out = await callTextChat({ system, prompt, maxTokens: 900 });
-    if (out.length > 200 && out.includes('## ')) return { text: out, provider: 'llm' };
-    throw new ApiError(502, 'CV amélioré IA invalide : génération non enregistrée.');
+    try {
+      const out = await callTextChat({ system, prompt, maxTokens: 1200 });
+      if (out.length > 200 && out.includes('## ')) return { text: out, provider: 'llm' };
+      console.warn('[llm] CV amélioré IA invalide, repli local.');
+    } catch (e) {
+      // Même logique que l'analyse : si l'IA distante est saturée/indisponible,
+      // on restructure le CV localement plutôt que de faire échouer l'action.
+      console.warn(`[llm] amélioration distante indisponible, repli local : ${e.message}`);
+    }
   }
   return { text: localImproveCV({ text, titrePoste }), provider: 'local' };
 }
@@ -272,7 +307,8 @@ export async function assistantReply({ messages }) {
         model,
         messages: [{ role: 'system', content: ASSISTANT_SYSTEM }, ...messages],
         temperature: 0.5,
-        max_tokens: 1200,
+        max_tokens: 1500,
+        ...(!String(base).includes('11434') ? { reasoning_effort: 'low' } : {}),
         ...(String(base).includes('11434') ? { keep_alive: '5m' } : {})
       }),
       signal: ctrl.signal
