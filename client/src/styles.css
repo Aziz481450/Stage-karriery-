@@ -123,4 +123,4 @@ button:focus-visible,a:focus-visible{outline:2px solid var(--brand);outline-offs
 .bell-box{display:grid;gap:.3rem}
 .bell-box time{font-size:.78rem}
 .pad-sm{padding:1rem 1.2rem;margin:0}
-@media(max-width:800px){.analyse{grid-template-columns:1fr}.bell-drop{width:min(92vw,340px);position:fixed;right:1rem}}
+@media(max-width:800px){.analyse{grid-template-columns:1fr}.bell-drop{width:min(92vw,340px);position:fixed;top:76px;right:12px}}
