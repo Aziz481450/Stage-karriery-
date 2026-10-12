@@ -1,5 +1,13 @@
 # Déploiement en ligne — lien permanent (24h/24, PC éteint)
 
+> **Statut : DÉPLOYÉ.**
+> - Lien du site : **https://stage-karriery.onrender.com**
+> - Service Render : `stage-karriery` (région Frankfurt, plan gratuit)
+> - Base de données : **Aiven MySQL** (base `defaultdb`, données importées)
+> - IA : **Groq** (`openai/gpt-oss-20b`)
+> - Code : https://github.com/Aziz481450/Stage-karriery-
+> - Connexion admin : `admin@karriery.tn` / `Admin_123456`
+
 Objectif : obtenir un lien public fixe qui fonctionne toujours, même quand le PC est éteint.
 
 ## Architecture

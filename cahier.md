@@ -290,6 +290,15 @@ Adaptations faites dans le code (prod = une seule origine) :
   - **Vérifié** : `cdp-responsive.mjs` → 14 routes × 6 largeurs = **0 débordement** ; régressions desktop OK (tailadmin/pages/messaging/assistant/photo).
 - **Préparation déploiement en ligne** (lien permanent) : `app.js` sert le SPA, `api.js` same-origin, `db.js` SSL, `render.yaml`, `deploy/karriery-dump.sql`, `DEPLOIEMENT.md`. Testé en prod local (`:5000`) : SPA + API OK, 0 erreur JS.
 
+### 2026-10-12
+- **Publication GitHub** : tout le projet poussé dans `Aziz481450/Stage-karriery-` (branche `main`).
+- **Déploiement en ligne effectué** :
+  - Base **Aiven MySQL** : service créé, schéma + données importés (9 tables, 5 comptes) via `deploy/karriery-dump.sql`.
+  - **Groq** : clé validée ; modèles `openai/gpt-oss-20b` (le 120b échoue en mode JSON `response_format`).
+  - **Render** : service `stage-karriery` créé via API (région Frankfurt, plan free), build `client` + `server`, start `node server/src/server.js`, variables d'env branchées.
+- **Lien public : https://stage-karriery.onrender.com** — vérifié : `/api/health` ok, SPA rendu (footer réseaux OK), login admin `Admin_123456` ok, 0 erreur JS.
+- Décision : hébergement gratuit (Render + Aiven + Groq) ; fichiers uploadés sur disque Render (peuvent être réinitialisés).
+
 ---
 
 ## 16. À faire / pistes
