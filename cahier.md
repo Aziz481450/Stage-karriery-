@@ -298,6 +298,8 @@ Adaptations faites dans le code (prod = une seule origine) :
   - **Render** : service `stage-karriery` créé via API (région Frankfurt, plan free), build `client` + `server`, start `node server/src/server.js`, variables d'env branchées.
 - **Lien public : https://stage-karriery.onrender.com** — vérifié : `/api/health` ok, SPA rendu (footer réseaux OK), login admin `Admin_123456` ok, 0 erreur JS.
 - Décision : hébergement gratuit (Render + Aiven + Groq) ; fichiers uploadés sur disque Render (peuvent être réinitialisés).
+- **Correctif dépôt de CV en ligne** : Groq renvoyait par intermittence un 400 `json_validate_failed` en mode `response_format: json_object` avec `gpt-oss` (raisonnement consommant le budget `max_tokens=1000` → génération vide). Corrigé dans `server/src/services/llm.js` : `max_tokens=2048`, `reasoning_effort:'low'`, repli automatique sans mode JSON, et **repli sur l'analyse locale** si l'IA distante est saturée (429) / indisponible → le dépôt de CV aboutit toujours. Idem pour « améliorer CV ».
+- **Test de bout en bout en ligne (31/31)** : inscription, profils candidat/rédacteur, dépôt CV (201, analyse score 82), téléchargement CV, file d'attente, acceptation, messagerie (2 sens), conversations, amélioration IA du CV (provider `llm`), changement de statut, notifications (`{items,nonLues}`), compteur non-lus, photo (upload/service/suppression), newsletter, assistant IA, admin (dashboard/users/demandes), auth (me/logout). Comptes de test créés puis supprimés de la base Aiven.
 
 ---
 
