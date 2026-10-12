@@ -1,6 +1,6 @@
-/* ============================================================
-   Karriery — Thème Premium (espace connecté uniquement)
-   Chargé en dernier : il affine l'app sans toucher au site public.
+﻿/* ============================================================
+   Karriery â€” ThÃ¨me Premium (espace connectÃ© uniquement)
+   ChargÃ© en dernier : il affine l'app sans toucher au site public.
    ============================================================ */
 .app{font-family:Outfit,system-ui,-apple-system,"Segoe UI",sans-serif;color:#344054}
 .app .col{background:var(--bg)}
@@ -14,7 +14,7 @@
 .app .dash-head h1,.app .content .page h1{font-weight:800;letter-spacing:-.03em;color:#171a2a}
 .app .dash-head h1 b{color:var(--brand)}
 
-/* ---------- Cartes & détail : gérés par dashboard.css (.dash) ---------- */
+/* ---------- Cartes & dÃ©tail : gÃ©rÃ©s par dashboard.css (.dash) ---------- */
 
 /* ---------- Profil : photo ---------- */
 .app .photo-row{display:flex;align-items:center;gap:1rem;margin:0 0 1.4rem}
@@ -52,7 +52,7 @@
 /* ---------- Profil (formulaire) ---------- */
 .app .content .grid{background:#fff;border:1px solid #eceef5;border-radius:20px;padding:1.6rem 1.7rem;box-shadow:0 18px 40px -24px rgba(20,24,40,.3)}
 .app .content .grid label{color:#2b3050;font-weight:600}
-.app .content .grid input,.app .content .grid textarea{color:var(--ink);border-radius:12px;border-color:#e6e8f2;box-shadow:0 6px 14px -12px rgba(20,24,40,.2);transition:border-color .2s,box-shadow .2s}
+.app .content .grid input,.app .content .grid textarea{color:var(--ink);background:var(--card);border:1px solid var(--line);border-radius:12px;box-shadow:0 6px 14px -12px rgba(20,24,40,.2);transition:border-color .2s,box-shadow .2s}
 .app .content .grid input:focus,.app .content .grid textarea:focus{border-color:var(--brand);box-shadow:0 0 0 3px rgba(224,24,63,.14)}
 
 /* ---------- Administration ---------- */
@@ -68,7 +68,7 @@
 .app .content .tbl tr:hover td{background:#fafbfe}
 .app .content .statut-select{background:#fff;border:1px solid #e6e8f2;border-radius:10px;padding:.5rem .6rem;font:inherit;font-size:.88rem;color:#2b3050}
 
-/* ---------- Animations d'entrée ---------- */
+/* ---------- Animations d'entrÃ©e ---------- */
 @media(prefers-reduced-motion:no-preference){
   @keyframes fp{from{opacity:0;transform:translateY(12px)}to{opacity:1;transform:none}}
   .dash .kpi,.dash .job,.dash-state{animation:fp .5s cubic-bezier(.22,.9,.3,1) both}
@@ -80,7 +80,7 @@
   .dash .job:nth-child(4){animation-delay:.15s}
 }
 
-/* ---------- Densité : icônes & boutons compacts ---------- */
+/* ---------- DensitÃ© : icÃ´nes & boutons compacts ---------- */
 .app .content{padding:1.6rem clamp(1rem,3vw,2.5rem) 2.5rem}
 .app .bell{width:38px;height:38px;border-radius:12px}
 .app .av{width:32px;height:32px;font-size:.78rem}
@@ -120,9 +120,9 @@
   .app .loader span{transform:rotate(45deg)}
 }
 
-/* ---------- Squelette shimmer : géré par dashboard.css (.job.sk) ---------- */
+/* ---------- Squelette shimmer : gÃ©rÃ© par dashboard.css (.job.sk) ---------- */
 
-/* ---------- Toast (auto-révélation) ---------- */
+/* ---------- Toast (auto-rÃ©vÃ©lation) ---------- */
 .app .toast-p{position:fixed;right:24px;bottom:24px;z-index:120;display:flex;align-items:center;gap:.7rem;max-width:340px;padding:.8rem 1rem;border-radius:14px;background:linear-gradient(120deg,#23283a,#1c1f2e);color:#f5f5f5;font-weight:600;font-size:.88rem;box-shadow:0 26px 52px -22px rgba(10,12,24,.6);animation:toast-in .45s cubic-bezier(.2,.9,.3,1.1) both}
 .app .toast-p.out{opacity:0;transform:translateY(10px);transition:opacity .4s,transform .4s}
 .app .toast-ic{width:32px;height:32px;border-radius:10px;display:grid;place-items:center;font-weight:800;flex:none;color:#fff}
@@ -137,7 +137,7 @@
 @keyframes tw-blink{50%{opacity:0}}
 @media(prefers-reduced-motion:reduce){.tw-caret{animation:none}}
 
-/* ---------- État vide horizontal + dépôt CV inline ---------- */
+/* ---------- Ã‰tat vide horizontal + dÃ©pÃ´t CV inline ---------- */
 .app .empty-h{display:flex;align-items:center;justify-content:space-between;gap:1.2rem;flex-wrap:wrap;background:linear-gradient(135deg,#ffffff 0%,#fdf4f6 100%);border:1px solid #eceef5;border-radius:18px;padding:1.3rem 1.4rem;box-shadow:0 14px 34px -26px rgba(20,24,40,.4)}
 .app .eh-hero{display:flex;align-items:center;gap:1rem;min-width:0}
 .app .eh-ic{width:54px;height:54px;border-radius:15px;background:linear-gradient(135deg,rgba(224,24,63,.14),rgba(224,24,63,.04));color:var(--brand);display:grid;place-items:center;flex:none;box-shadow:0 10px 20px -12px rgba(224,24,63,.5)}
@@ -153,7 +153,7 @@
 /* ---------- Profil ---------- */
 .app .content .page .pf-note{margin:-.9rem 0 1.5rem;max-width:600px}
 
-/* ---------- Dashboard rédacteur (CV + IA + charge) ---------- */
+/* ---------- Dashboard rÃ©dacteur (CV + IA + charge) ---------- */
 .app .content .side-cards .card h3{margin:0 0 .9rem;font-size:1.02rem;font-weight:800;letter-spacing:-.01em;color:#171a2a}
 .app .content .side-cards .card .comp p{font-size:.88rem}
 .app .content .side-cards .card .bar-p{margin-top:.1rem}
@@ -180,7 +180,7 @@
 .app .content .llm-more:hover{text-decoration:underline}
 .app .content .llm-na{margin:.55rem 0 0;font-size:.84rem}
 
-/* ---------- Workflow : demande en attente → acceptation / refus ---------- */
+/* ---------- Workflow : demande en attente â†’ acceptation / refus ---------- */
 .app .content .sol{background:#fafbfd;border:1px solid #eceef5;border-radius:16px;padding:.9rem 1rem}
 .app .content .sol-top{display:flex;align-items:center;gap:.7rem}
 .app .content .sol-top .job-id{flex:1;min-width:0}
@@ -207,3 +207,4 @@
   .app .content .grid{grid-template-columns:1fr}
   .app .content .tbl{display:block;overflow-x:auto}
 }
+
