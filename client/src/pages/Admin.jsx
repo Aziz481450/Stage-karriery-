@@ -11,16 +11,26 @@ export default function Admin() {
   const [dash, setDash] = useState(null);
   const [users, setUsers] = useState(null);
   const [filtre, setFiltre] = useState('');
+  const [statutFiltre, setStatutFiltre] = useState('');
+  const [search, setSearch] = useState('');
   const [demandes, setDemandes] = useState(null);
   const [news, setNews] = useState(null);
   const [msg, setMsg] = useState(null);
 
   const loadStats = () => api.get('/admin/dashboard').then((r) => setDash(r.data)).catch((e) => setMsg({ err: errMsg(e) }));
-  const loadUsers = () => api.get('/admin/users', { params: filtre ? { role: filtre } : {} }).then((r) => setUsers(r.data)).catch(() => {});
+  const userParams = () => {
+    const p = {};
+    if (filtre) p.role = filtre;
+    if (statutFiltre) p.statut = statutFiltre;
+    if (search.trim()) p.q = search.trim();
+    return p;
+  };
+  const loadUsers = () => api.get('/admin/users', { params: userParams() }).then((r) => setUsers(r.data)).catch(() => {});
   const loadDemandes = () => api.get('/admin/demandes').then((r) => setDemandes(r.data)).catch(() => {});
   const loadNews = () => api.get('/admin/newsletter').then((r) => setNews(r.data)).catch(() => {});
 
-  useEffect(() => { loadStats(); loadUsers(); loadDemandes(); loadNews(); }, []);
+  useEffect(() => { loadStats(); loadDemandes(); loadNews(); }, []); // eslint-disable-line react-hooks/exhaustive-deps
+  useEffect(() => { loadUsers(); }, [filtre, statutFiltre, search]); // eslint-disable-line react-hooks/exhaustive-deps
 
   const act = async (fn, okMessage) => {
     setMsg(null);
@@ -58,6 +68,15 @@ export default function Admin() {
                 {r || 'Tous'}
               </button>
             ))}
+          </div>
+          <div className="admin-filters">
+            <input type="search" value={search} onChange={(e) => setSearch(e.target.value)}
+              placeholder="Rechercher par nom ou email…" aria-label="Rechercher un utilisateur" />
+            <select value={statutFiltre} onChange={(e) => setStatutFiltre(e.target.value)} aria-label="Filtrer par statut">
+              <option value="">Tous les statuts</option>
+              <option value="actif">Actif</option>
+              <option value="annule">Annulé</option>
+            </select>
           </div>
           {users === null
             ? <Loader size={64} />

@@ -16,10 +16,15 @@ export const dashboard = async (_req, res) => {
 
 // === Utilisateurs ===
 export const listUsers = async (req, res) => {
-  const { role, statut } = req.query;
+  const { role, statut, q } = req.query;
   const where = []; const params = [];
   if (role && ['candidat', 'redacteur', 'admin'].includes(role)) { where.push('role = ?'); params.push(role); }
   if (statut && ['actif', 'annule'].includes(statut)) { where.push('statut = ?'); params.push(statut); }
+  if (typeof q === 'string' && q.trim()) {
+    const like = `%${q.trim().slice(0, 100)}%`;
+    where.push('(nom LIKE ? OR email LIKE ?)');
+    params.push(like, like);
+  }
   const sql = `SELECT id, nom, email, role, statut, created_at FROM users
     ${where.length ? 'WHERE ' + where.join(' AND ') : ''} ORDER BY id DESC LIMIT 500`;
   const [rows] = await db.query(sql, params);

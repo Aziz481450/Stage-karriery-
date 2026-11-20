@@ -63,6 +63,12 @@ C:\xampp\mysql\bin\mysql.exe -u root < server/database.sql
 ```
 (ou importer `server/database.sql` via phpMyAdmin dans la base `karriery`)
 
+Base déjà existante : appliquer les migrations (offres + candidatures) :
+```powershell
+C:\xampp\mysql\bin\mysql.exe -u root karriery < server/migrations/sprint-6-offres.sql
+C:\xampp\mysql\bin\mysql.exe -u root karriery < server/migrations/sprint-6-candidatures.sql
+```
+
 ### 2. API (port 5000)
 
 ```powershell
@@ -87,6 +93,8 @@ Ouvrir http://localhost:5173
 | Rôle | Identifiant | Mot de passe |
 |------|-------------|--------------|
 | Admin | `admin@karriery.tn` | `Admin_123456` |
+| Rédacteur | `redacteur.test@karriery.tn` | `Test_123456` |
+| Candidat | `candidat.test@karriery.tn` | `Test_123456` |
 | Candidat | `mohamed@gmail.com` | (compte existant) |
 
 Créer un administrateur :
@@ -122,14 +130,39 @@ LLM_ASSISTANT_MODEL=
 - Inscription, profil (poste recherché, compétences), photo de profil.
 - Dépôt d'un CV (PDF, 5 Mo max) → analyse IA + attribution d'un rédacteur.
 - Suivi des dossiers, messagerie temps réel, notifications.
+- Consultation des offres d'emploi ouvertes (recherche et filtre par spécialité).
+- Candidature à une offre : message de motivation + choix d'un dossier avec CV, suivi du statut.
 
 ### Rédacteur
 - Profil (spécialité, disponibilité), dossiers attribués, traitement.
 - Messagerie avec les candidats, fichier de travail joints.
+- CRUD complet de ses offres d'emploi : Front-end, Back-end, Full-stack, Mobile, AI, IoT, Systèmes embarqués.
+- Réception des candidatures sur ses offres : lecture du message et du CV, accepter / refuser.
 
 ### Admin
 - Vue d'ensemble (comptes, dossiers, score moyen).
+- Gestion des utilisateurs avec filtres par rôle, statut et recherche textuelle (nom / email).
 - Gestion des statuts de dossiers, annulation / réactivation de comptes.
+- Accès à **toutes** les offres (création, modification, suppression, attribution à un rédacteur).
+- Accès à **toutes** les candidatures et décision acceptée / refusée.
+
+### Offres d'emploi (Sprint 6)
+- Table `offres` (voir `server/migrations/sprint-6-offres.sql` à appliquer sur une base existante).
+- Routes : `GET /api/offres` (consultation), `GET /api/offres/gestion/mine` (gestion),
+  `POST /api/offres`, `PUT /api/offres/:id`, `DELETE /api/offres/:id`.
+- Champs : titre, entreprise, spécialité, lieu, salaire min/max, niveau d'expérience,
+  description, exigences, statut (ouverte/fermée), dates de création et mise à jour.
+
+### Candidatures (Sprint 6)
+- Table `candidatures` (`server/migrations/sprint-6-candidatures.sql`), une candidature par offre et par candidat.
+- Le candidat choisit un de ses dossiers existants (avec CV) et écrit un message de motivation.
+- Routes : `POST /api/offres/:id/candidatures`, `GET /api/candidatures`,
+  `GET /api/offres/:id/candidatures`, `PUT /api/candidatures/:id/statut`,
+  `GET /api/candidatures/:id/cv`.
+- Le rédacteur propriétaire de l'offre (ou l'admin) accepte ou refuse ; le CV reste
+  accessible uniquement au candidat, au rédacteur concerné et à l'admin.
+- Le bouton **Voir le CV** télécharge le PDF via l'API authentifiée (le JWT ne peut pas
+  être envoyé par un simple lien) et l'affiche dans un lecteur intégré à la page.
 
 ### Temps réel
 - Socket.IO : messages, présence en ligne, notifications, indicateur de frappe.

@@ -94,3 +94,42 @@ CREATE TABLE fichiers(
   FOREIGN KEY (expediteur_id) REFERENCES users(id) ON DELETE CASCADE,
   INDEX idx_fichiers_demande (demande_id)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+
+-- ===== Sprint 6 : offres d'emploi =====
+CREATE TABLE IF NOT EXISTS offres(
+  id INT AUTO_INCREMENT PRIMARY KEY,
+  redacteur_id INT NOT NULL,
+  titre VARCHAR(180) NOT NULL,
+  entreprise VARCHAR(160) NOT NULL,
+  categorie ENUM('frontend','backend','fullstack','mobile','ai','iot','embedded') NOT NULL,
+  lieu VARCHAR(160) NOT NULL DEFAULT '',
+  salaire_min INT NULL,
+  salaire_max INT NULL,
+  niveau_experience VARCHAR(80) NOT NULL DEFAULT '',
+  description TEXT NOT NULL,
+  exigences TEXT NOT NULL,
+  statut ENUM('ouverte','fermee') NOT NULL DEFAULT 'ouverte',
+  created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+  updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+  FOREIGN KEY (redacteur_id) REFERENCES users(id) ON DELETE CASCADE,
+  INDEX idx_offres_categorie (categorie),
+  INDEX idx_offres_statut (statut)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+
+-- ===== Sprint 6 : candidatures aux offres =====
+CREATE TABLE IF NOT EXISTS candidatures(
+  id INT AUTO_INCREMENT PRIMARY KEY,
+  offre_id INT NOT NULL,
+  candidat_id INT NOT NULL,
+  demande_id INT NOT NULL,
+  message VARCHAR(2000) NOT NULL DEFAULT '',
+  statut ENUM('en_attente','acceptee','refusee') NOT NULL DEFAULT 'en_attente',
+  created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+  updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+  UNIQUE KEY uniq_candidature (offre_id, candidat_id),
+  FOREIGN KEY (offre_id) REFERENCES offres(id) ON DELETE CASCADE,
+  FOREIGN KEY (candidat_id) REFERENCES users(id) ON DELETE CASCADE,
+  FOREIGN KEY (demande_id) REFERENCES demandes(id) ON DELETE CASCADE,
+  INDEX idx_candidatures_candidat (candidat_id),
+  INDEX idx_candidatures_statut (statut)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;

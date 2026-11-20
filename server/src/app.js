@@ -17,6 +17,8 @@ import { db } from './config/db.js';
 import demandesRoutes from './routes/demandes.js';
 import notificationsRoutes from './routes/notifications.js';
 import adminRoutes from './routes/admin.js';
+import offresRoutes from './routes/offres.js';
+import candidaturesRoutes from './routes/candidatures.js';
 
 if (!process.env.JWT_SECRET) {
   console.error('JWT_SECRET manquant : complétez server/.env puis relancez.');
@@ -57,6 +59,8 @@ app.post('/api/assistant/chat', requireAuth, limit('assistant', 60000, 20), wrap
 app.use('/api', demandesRoutes);
 app.use('/api', notificationsRoutes);
 app.use('/api', adminRoutes);
+app.use('/api', offresRoutes);
+app.use('/api', candidaturesRoutes);
 
 // Toute route API inconnue renvoie du JSON (sinon le front affiche un message trompeur)
 app.use('/api', (_req, res) => res.status(404).json({ message: 'Route inconnue.' }));

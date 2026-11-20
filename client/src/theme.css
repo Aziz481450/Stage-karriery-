@@ -48,6 +48,20 @@ body { font-family: var(--font); background: var(--bg); }
 .app .tabs-s .on { background: linear-gradient(135deg,#E0183F,#ff5b76); box-shadow: 0 12px 22px -10px rgba(224,24,63,.5); }
 .app .content .tabs button.on, .app .content .roles.admin-tabs button.on { background: linear-gradient(135deg,#E0183F,#ff5b76); }
 
+/* ---------- Filtres de la page Administration ---------- */
+.app .content .admin-filters { display: flex; gap: .6rem; flex-wrap: wrap; margin: 0 0 1.2rem; }
+.app .content .admin-filters input,
+.app .content .admin-filters select {
+  background: var(--card, #fff); color: var(--ink, #15151B);
+  border: 1px solid var(--line, #E6E6EA); border-radius: 10px;
+  padding: .6rem .85rem; font: inherit; font-size: .9rem; outline: none;
+}
+.app .content .admin-filters input { flex: 1; min-width: 200px; }
+.app .content .admin-filters input:focus,
+.app .content .admin-filters select:focus {
+  border-color: var(--brand); box-shadow: 0 0 0 3px rgba(224,24,63,.12);
+}
+
 /* ---------- Détail & divers ---------- */
 .app .detail .eyebrow { color: var(--brand); }
 .app .content .link { color: var(--blue-link); }

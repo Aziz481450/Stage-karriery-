@@ -11,6 +11,9 @@ import DemandeDetail from './pages/DemandeDetail';
 import Messagerie from './pages/Messagerie';
 import Conversations from './pages/Conversations';
 import Admin from './pages/Admin';
+import OffresBrowse from './pages/OffresBrowse';
+import OffresManage from './pages/OffresManage';
+import Candidatures from './pages/Candidatures';
 import Footer from './components/Footer';
 import AppShell from './layout/AppShell';
 
@@ -56,13 +59,18 @@ export default function App() {
           <Route path="/candidat/dossiers" element={<Role roles={C}><Demandes /></Role>} />
           <Route path="/candidat/profil" element={<Role roles={C}><ProfilCandidat /></Role>} />
           <Route path="/candidat/messagerie" element={<Role roles={C}><Conversations /></Role>} />
+          <Route path="/candidat/offres" element={<Role roles={C}><OffresBrowse /></Role>} />
           <Route path="/redacteur/dashboard" element={<Role roles={R}><Dashboard /></Role>} />
           <Route path="/redacteur/dossiers" element={<Role roles={R}><Demandes /></Role>} />
           <Route path="/redacteur/profil" element={<Role roles={R}><ProfilRedacteur /></Role>} />
           <Route path="/redacteur/messagerie" element={<Role roles={R}><Conversations /></Role>} />
+          <Route path="/redacteur/offres" element={<Role roles={R}><OffresManage /></Role>} />
+          <Route path="/redacteur/candidatures" element={<Role roles={R}><Candidatures /></Role>} />
           <Route path="/demandes/:id" element={<Role roles={ALL}><DemandeDetail /></Role>} />
           <Route path="/demandes/:id/messages" element={<Role roles={ALL}><Messagerie /></Role>} />
           <Route path="/admin" element={<Role roles={['admin']}><Admin /></Role>} />
+          <Route path="/admin/offres" element={<Role roles={['admin']}><OffresManage /></Role>} />
+          <Route path="/admin/candidatures" element={<Role roles={['admin']}><Candidatures /></Role>} />
         </Route>
         <Route path="*" element={<Navigate to="/" replace />} />
       </Routes>

@@ -13,15 +13,15 @@ import '../theme.css';
 
 const NAV = {
   candidat: [
-    { group: 'Menu', items: [['/candidat/dashboard', 'Tableau de bord', 'dash'], ['/candidat/dossiers', 'Mes dossiers', 'files'], ['/candidat/messagerie', 'Messagerie', 'mail'], ['/candidat/profil', 'Mon profil', 'user']] },
+    { group: 'Menu', items: [['/candidat/dashboard', 'Tableau de bord', 'dash'], ['/candidat/dossiers', 'Mes dossiers', 'files'], ['/candidat/offres', 'Offres d’emploi', 'brief'], ['/candidat/messagerie', 'Messagerie', 'mail'], ['/candidat/profil', 'Mon profil', 'user']] },
     { group: 'Autres', items: [['mailto:info@karriery.com', 'Aide', 'help']] },
   ],
   redacteur: [
-    { group: 'Menu', items: [['/redacteur/dashboard', 'Tableau de bord', 'dash'], ['/redacteur/dossiers', 'Dossiers', 'files'], ['/redacteur/messagerie', 'Messagerie', 'mail'], ['/redacteur/profil', 'Mon profil', 'user']] },
+    { group: 'Menu', items: [['/redacteur/dashboard', 'Tableau de bord', 'dash'], ['/redacteur/dossiers', 'Dossiers', 'files'], ['/redacteur/offres', 'Offres d’emploi', 'brief'], ['/redacteur/candidatures', 'Candidatures', 'user'], ['/redacteur/messagerie', 'Messagerie', 'mail'], ['/redacteur/profil', 'Mon profil', 'user']] },
     { group: 'Autres', items: [['mailto:info@karriery.com', 'Aide', 'help']] },
   ],
   admin: [
-    { group: 'Menu', items: [['/admin', 'Administration', 'admin']] },
+    { group: 'Menu', items: [['/admin', 'Administration', 'admin'], ['/admin/offres', 'Offres d’emploi', 'brief'], ['/admin/candidatures', 'Candidatures', 'user']] },
     { group: 'Autres', items: [['mailto:info@karriery.com', 'Aide', 'help']] },
   ],
 };
