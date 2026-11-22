@@ -6,7 +6,7 @@ CREATE TABLE users(
   email VARCHAR(160) NOT NULL UNIQUE,
   mot_de_passe VARCHAR(255) NOT NULL,
   role ENUM('candidat','redacteur','admin') NOT NULL,
-  statut ENUM('actif','annule') NOT NULL DEFAULT 'actif',
+  statut ENUM('en_attente','actif','annule') NOT NULL DEFAULT 'actif',
   photo VARCHAR(255) NULL,
   created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );

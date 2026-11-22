@@ -56,6 +56,7 @@ export default function Admin() {
             <div className="kpi"><span>Comptes actifs</span><strong>{dash.users.filter((u) => u.statut === 'actif').reduce((s, u) => s + u.n, 0)}</strong></div>
             <div className="kpi"><span>Candidats</span><strong>{dash.users.filter((u) => u.role === 'candidat').reduce((s, u) => s + u.n, 0)}</strong></div>
             <div className="kpi"><span>Rédacteurs</span><strong>{dash.users.filter((u) => u.role === 'redacteur').reduce((s, u) => s + u.n, 0)}</strong></div>
+            <div className="kpi"><span>Rédacteurs à valider</span><strong>{dash.users.filter((u) => u.role === 'redacteur' && u.statut === 'en_attente').reduce((s, u) => s + u.n, 0)}</strong></div>
             <div className="kpi"><span>Score moyen</span><strong>{dash.scores.moyenne || 0}/100</strong></div>
           </div>
         ))}
@@ -74,6 +75,7 @@ export default function Admin() {
               placeholder="Rechercher par nom ou email…" aria-label="Rechercher un utilisateur" />
             <select value={statutFiltre} onChange={(e) => setStatutFiltre(e.target.value)} aria-label="Filtrer par statut">
               <option value="">Tous les statuts</option>
+              <option value="en_attente">En attente</option>
               <option value="actif">Actif</option>
               <option value="annule">Annulé</option>
             </select>
@@ -92,9 +94,17 @@ export default function Admin() {
                         <td><StatutBadge statut={u.statut} /></td>
                         <td className="muted">{date(u.created_at)}</td>
                         <td>
-                          {u.statut === 'actif'
-                            ? <button type="button" className="link" onClick={() => act(() => api.put(`/admin/users/${u.id}/cancel`), `Compte ${u.nom} annulé.`)}>Annuler</button>
-                            : <button type="button" className="link" onClick={() => act(() => api.put(`/admin/users/${u.id}/activate`), `Compte ${u.nom} réactivé.`)}>Réactiver</button>}
+                          {u.statut === 'en_attente' ? (
+                            <>
+                              <button type="button" className="link" onClick={() => act(() => api.put(`/admin/users/${u.id}/approve`), `Rédacteur ${u.nom} validé.`)}>Approuver</button>
+                              {' · '}
+                              <button type="button" className="link" onClick={() => act(() => api.put(`/admin/users/${u.id}/reject`), `Candidature de ${u.nom} refusée.`)}>Refuser</button>
+                            </>
+                          ) : u.statut === 'actif' ? (
+                            <button type="button" className="link" onClick={() => act(() => api.put(`/admin/users/${u.id}/cancel`), `Compte ${u.nom} annulé.`)}>Annuler</button>
+                          ) : (
+                            <button type="button" className="link" onClick={() => act(() => api.put(`/admin/users/${u.id}/activate`), `Compte ${u.nom} réactivé.`)}>Réactiver</button>
+                          )}
                         </td>
                       </tr>
                     ))}

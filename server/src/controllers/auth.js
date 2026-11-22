@@ -12,9 +12,12 @@ export async function register(req, res) {
   const [dup] = await db.query('SELECT id FROM users WHERE email=?', [email]);
   if (dup.length) return res.status(409).json({ message: 'Cet email est déjà utilisé.' });
   const hash = await bcrypt.hash(password, 10);
+  // Les candidats sont actifs immédiatement ; les rédacteurs doivent être
+  // validés par un administrateur avant leur première connexion.
+  const statut = role === 'redacteur' ? 'en_attente' : 'actif';
   let r;
   try {
-    [r] = await db.query('INSERT INTO users(nom,email,mot_de_passe,role) VALUES(?,?,?,?)', [nom, email, hash, role]);
+    [r] = await db.query('INSERT INTO users(nom,email,mot_de_passe,role,statut) VALUES(?,?,?,?,?)', [nom, email, hash, role, statut]);
   } catch (e) {
     // Course possible entre la vérification et l'insertion (contrainte UNIQUE)
     if (e.code === 'ER_DUP_ENTRY') return res.status(409).json({ message: 'Cet email est déjà utilisé.' });
@@ -22,6 +25,13 @@ export async function register(req, res) {
   }
   await db.query(`INSERT INTO ${role}s(user_id) VALUES(?)`, [r.insertId]);
   const u = { id: r.insertId, nom, email, role };
+  if (statut === 'en_attente') {
+    return res.status(201).json({
+      pending: true,
+      message: 'Compte rédacteur créé. Un administrateur doit le valider avant votre première connexion.',
+      user: pub(u),
+    });
+  }
   res.status(201).json({ token: sign(u), user: pub(u) });
 }
 
@@ -32,6 +42,8 @@ export async function login(req, res) {
   if (!u || !(await bcrypt.compare(password || '', u.mot_de_passe)))
     return res.status(401).json({ message: 'Email ou mot de passe incorrect.' });
   if (u.statut === 'annule') return res.status(403).json({ message: 'Ce compte a été annulé.' });
+  if (u.statut === 'en_attente')
+    return res.status(403).json({ message: 'Votre compte rédacteur est en attente de validation par un administrateur.' });
   res.json({ token: sign(u), user: pub(u) });
 }
 

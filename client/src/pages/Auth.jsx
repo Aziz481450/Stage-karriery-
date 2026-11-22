@@ -1,11 +1,13 @@
 import { useState } from 'react';
-import { Link, Navigate, useNavigate } from 'react-router-dom';
+import { Link, Navigate, useLocation, useNavigate } from 'react-router-dom';
 import { useAuth } from '../AuthContext';
 import { errMsg } from '../api';
 export default function Auth({ mode }) {
   const isReg = mode === 'register';
   const { user, login, register } = useAuth();
   const nav = useNavigate();
+  const location = useLocation();
+  const notice = location.state?.notice || '';
   const [f, setF] = useState({ nom: '', email: '', password: '', role: 'candidat' });
   const [err, setErr] = useState('');
   const [busy, setBusy] = useState(false);
@@ -13,8 +15,16 @@ export default function Auth({ mode }) {
   const set = (k) => (e) => setF({ ...f, [k]: e.target.value });
   const submit = async (e) => {
     e.preventDefault(); setErr(''); setBusy(true);
-    try { await (isReg ? register(f) : login(f)); nav('/'); }
-    catch (x) { setErr(errMsg(x)); } finally { setBusy(false); }
+    try {
+      if (isReg) {
+        const result = await register(f);
+        // Le rédacteur en attente est renvoyé vers la connexion avec un message.
+        if (result.pending) { nav('/connexion', { state: { notice: result.message } }); return; }
+        nav('/');
+      } else {
+        await login(f); nav('/');
+      }
+    } catch (x) { setErr(errMsg(x)); } finally { setBusy(false); }
   };
   return (
     <main className="split">
@@ -34,6 +44,7 @@ export default function Auth({ mode }) {
       </section>
       <form className="panel" onSubmit={submit}>
         <h2>{isReg ? 'Créer un compte' : 'Se connecter'}</h2>
+        {notice && <p className="ok" role="status">{notice}</p>}
         {isReg && <>
           <label>Nom complet<input value={f.nom} onChange={set('nom')} required /></label>
           <div className="roles">

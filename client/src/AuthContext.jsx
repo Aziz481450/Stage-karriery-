@@ -11,7 +11,12 @@ export function AuthProvider({ children }) {
   }, []);
   const start = (d) => { localStorage.setItem('token', d.token); setUser(d.user); };
   const login = async (f) => start((await api.post('/auth/login', f)).data);
-  const register = async (f) => start((await api.post('/auth/register', f)).data);
+  const register = async (f) => {
+    const data = (await api.post('/auth/register', f)).data;
+    // Un rédacteur en attente de validation ne reçoit pas de jeton : on ne démarre pas la session.
+    if (data.token) start(data);
+    return data;
+  };
   const refresh = async () => { const r = await api.get('/auth/me'); setUser(r.data); return r.data; };
   const logout = async () => { try { await api.post('/auth/logout'); } catch {} localStorage.removeItem('token'); setUser(null); };
   return <Ctx.Provider value={{ user, loading, login, register, logout, refresh }}>{children}</Ctx.Provider>;

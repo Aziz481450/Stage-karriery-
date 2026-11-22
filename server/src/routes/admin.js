@@ -11,6 +11,8 @@ router.get('/admin/stats', ...adminOnly, wrap(admin.dashboard));
 router.get('/admin/users', ...adminOnly, wrap(admin.listUsers));
 router.put('/admin/users/:id/cancel', ...adminOnly, wrap(admin.cancelUser));
 router.put('/admin/users/:id/activate', ...adminOnly, wrap(admin.activateUser));
+router.put('/admin/users/:id/approve', ...adminOnly, wrap(admin.approveUser));
+router.put('/admin/users/:id/reject', ...adminOnly, wrap(admin.rejectUser));
 router.patch('/admin/users/:id/statut', ...adminOnly, wrap(admin.setUserStatut));
 router.get('/admin/demandes', ...adminOnly, wrap(admin.listDemandes));
 router.put('/admin/demandes/:id/status', ...adminOnly, wrap(admin.setDemandeStatut));

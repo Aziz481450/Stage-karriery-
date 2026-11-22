@@ -11,10 +11,14 @@ export const requireAuth = async (req, res, next) => {
   }
   if (!payload?.id) return res.status(401).json({ message: 'Session invalide. Reconnectez-vous.' });
   try {
-    // Un jeton ne doit pas survivre à l'annulation du compte
+    // Un jeton ne doit pas survivre à l'annulation ou à la mise en attente du compte
     const [rows] = await db.query('SELECT statut FROM users WHERE id=?', [payload.id]);
     if (!rows.length || rows[0].statut !== 'actif')
-      return res.status(401).json({ message: 'Compte désactivé. Reconnectez-vous.' });
+      return res.status(401).json({
+        message: rows[0]?.statut === 'en_attente'
+          ? 'Compte en attente de validation par un administrateur.'
+          : 'Compte désactivé. Reconnectez-vous.',
+      });
     req.user = payload;
     next();
   } catch (e) {

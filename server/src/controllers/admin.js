@@ -19,7 +19,7 @@ export const listUsers = async (req, res) => {
   const { role, statut, q } = req.query;
   const where = []; const params = [];
   if (role && ['candidat', 'redacteur', 'admin'].includes(role)) { where.push('role = ?'); params.push(role); }
-  if (statut && ['actif', 'annule'].includes(statut)) { where.push('statut = ?'); params.push(statut); }
+  if (statut && ['en_attente', 'actif', 'annule'].includes(statut)) { where.push('statut = ?'); params.push(statut); }
   if (typeof q === 'string' && q.trim()) {
     const like = `%${q.trim().slice(0, 100)}%`;
     where.push('(nom LIKE ? OR email LIKE ?)');
@@ -35,11 +35,11 @@ export const setUserStatut = async (req, res) => {
   const id = Number(req.params.id);
   const { statut } = req.body;
   if (!Number.isInteger(id)) throw new ApiError(400, 'Identifiant invalide.');
-  if (!['actif', 'annule'].includes(statut)) throw new ApiError(400, 'Statut invalide (actif ou annulé).');
+  if (!['en_attente', 'actif', 'annule'].includes(statut)) throw new ApiError(400, 'Statut invalide (en_attente, actif ou annulé).');
   if (id === req.user.id) throw new ApiError(400, 'Impossible de modifier votre propre compte.');
   const [r] = await db.query('UPDATE users SET statut = ? WHERE id = ?', [statut, id]);
   if (!r.affectedRows) throw new ApiError(404, 'Utilisateur introuvable.');
-  res.json({ message: statut === 'annule' ? 'Compte annulé.' : 'Compte réactivé.' });
+  res.json({ message: { en_attente: 'Compte mis en attente.', actif: 'Compte réactivé.', annule: 'Compte annulé.' }[statut] });
 };
 
 export const cancelUser = async (req, res) => {
@@ -60,6 +60,28 @@ export const activateUser = async (req, res) => {
   const [r] = await db.query('UPDATE users SET statut = ? WHERE id = ?', ['actif', id]);
   if (!r.affectedRows) throw new ApiError(404, 'Utilisateur introuvable.');
   res.json({ message: 'Compte réactivé.' });
+};
+
+// Validation d'un compte rédacteur : seul un compte en attente peut être approuvé.
+export const approveUser = async (req, res) => {
+  const id = Number(req.params.id);
+  if (!Number.isInteger(id)) throw new ApiError(400, 'Identifiant invalide.');
+  const [r] = await db.query(
+    "UPDATE users SET statut = 'actif' WHERE id = ? AND role = 'redacteur' AND statut = 'en_attente'", [id]
+  );
+  if (!r.affectedRows) throw new ApiError(404, 'Rédacteur en attente introuvable.');
+  res.json({ message: 'Compte rédacteur validé. Il peut maintenant se connecter.' });
+};
+
+// Refus d'une candidature de rédacteur en attente.
+export const rejectUser = async (req, res) => {
+  const id = Number(req.params.id);
+  if (!Number.isInteger(id)) throw new ApiError(400, 'Identifiant invalide.');
+  const [r] = await db.query(
+    "UPDATE users SET statut = 'annule' WHERE id = ? AND role = 'redacteur' AND statut = 'en_attente'", [id]
+  );
+  if (!r.affectedRows) throw new ApiError(404, 'Rédacteur en attente introuvable.');
+  res.json({ message: 'Candidature de rédacteur refusée.' });
 };
 
 export const listNewsletter = async (_req, res) => {

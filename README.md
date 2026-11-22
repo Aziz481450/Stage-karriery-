@@ -63,10 +63,11 @@ C:\xampp\mysql\bin\mysql.exe -u root < server/database.sql
 ```
 (ou importer `server/database.sql` via phpMyAdmin dans la base `karriery`)
 
-Base déjà existante : appliquer les migrations (offres + candidatures) :
+Base déjà existante : appliquer les migrations (offres + candidatures + validation des rédacteurs) :
 ```powershell
 C:\xampp\mysql\bin\mysql.exe -u root karriery < server/migrations/sprint-6-offres.sql
 C:\xampp\mysql\bin\mysql.exe -u root karriery < server/migrations/sprint-6-candidatures.sql
+C:\xampp\mysql\bin\mysql.exe -u root karriery < server/migrations/sprint-7-recruteur-approval.sql
 ```
 
 ### 2. API (port 5000)
@@ -134,6 +135,8 @@ LLM_ASSISTANT_MODEL=
 - Candidature à une offre : message de motivation + choix d'un dossier avec CV, suivi du statut.
 
 ### Rédacteur
+- Inscription soumise à validation administrative : le compte est créé en attente et
+  la connexion est bloquée jusqu'à approbation (aucun jeton n'est délivré à l'inscription).
 - Profil (spécialité, disponibilité), dossiers attribués, traitement.
 - Messagerie avec les candidats, fichier de travail joints.
 - CRUD complet de ses offres d'emploi : Front-end, Back-end, Full-stack, Mobile, AI, IoT, Systèmes embarqués.
@@ -141,6 +144,8 @@ LLM_ASSISTANT_MODEL=
 
 ### Admin
 - Vue d'ensemble (comptes, dossiers, score moyen).
+- Validation des nouveaux rédacteurs : liste filtrée « En attente », boutons **Approuver** / **Refuser**
+  (`PUT /api/admin/users/:id/approve` et `PUT /api/admin/users/:id/reject`).
 - Gestion des utilisateurs avec filtres par rôle, statut et recherche textuelle (nom / email).
 - Gestion des statuts de dossiers, annulation / réactivation de comptes.
 - Accès à **toutes** les offres (création, modification, suppression, attribution à un rédacteur).
