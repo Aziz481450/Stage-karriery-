@@ -274,6 +274,7 @@
 .app .content .dash .llm-c ul { margin: 0; padding-left: 16px; display: grid; gap: 6px; font-size: 13px; line-height: 1.5; color: var(--g700); }
 .app .content .dash .llm-more { margin-top: 12px; display: inline-flex; align-items: center; gap: 6px; font-size: 13px; font-weight: 600; color: var(--brand); text-decoration: none; }
 .app .content .dash .llm-more:hover { text-decoration: underline; }
+.app .content .dash .llm-news { margin-top: 12px; display: flex; justify-content: flex-end; }
 .app .content .dash .llm-na { margin: 12px 0 0; font-size: 13px; }
 .app .content .dash .btn-ai { color: var(--brand); border-color: rgba(224, 24, 63, .4); }
 .app .content .dash .btn-ai:hover:not(:disabled) { background: var(--brand-50); border-color: var(--brand); }

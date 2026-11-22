@@ -6,6 +6,7 @@ import { renderCvPdf } from '../services/cvPdf.js';
 import { getDemandeForUser } from '../services/matching.js';
 import { createNotification } from '../services/notifications.js';
 import { emitToRoom, emitToUser } from '../services/socket.js';
+import { sendDossierCvEmail } from '../services/cvEmail.js';
 import { saveBuffer, removeStoredFile, buildStorageName, readStoredFile } from '../utils/storage.js';
 
 export const createDemande = async (req, res) => {
@@ -408,4 +409,16 @@ export const getCvAmeliorer = async (req, res) => {
   res.setHeader('Content-Type', 'application/pdf');
   res.setHeader('Content-Disposition', `inline; filename="${basename}"`);
   res.send(buf);
+};
+
+// Bouton « Newsletter » depuis le widget d'analyse IA : envoie le CV amélioré
+// au candidat avec l'expéditeur Karriery Newsletter.
+export const sendCvNewsletter = async (req, res) => {
+  const id = Number(req.params.id);
+  if (!Number.isInteger(id)) throw new ApiError(400, 'Identifiant invalide.');
+  const [rows] = await db.query('SELECT * FROM demandes WHERE id = ?', [id]);
+  if (!rows.length) throw new ApiError(404, 'Demande introuvable.');
+  if (!canView(rows[0], req.user))
+    throw new ApiError(403, 'Accès refusé : vous n\u2019êtes pas concerné par cette demande.');
+  res.json(await sendDossierCvEmail({ id, source: 'newsletter' }));
 };

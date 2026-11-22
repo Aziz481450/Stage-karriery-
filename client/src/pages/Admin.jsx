@@ -1,10 +1,12 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import api, { errMsg } from '../api';
+import Icon from '../components/Icon';
 import StatutBadge from '../components/StatutBadge';
 import Loader from '../components/Loader';
 import Toast from '../components/Toast';
+import './admin.css';
 
-const date = (d) => new Date(d).toLocaleString('fr-FR', { dateStyle: 'short', timeStyle: 'short' });
+const date = (d) => (d ? new Date(d).toLocaleString('fr-FR', { dateStyle: 'short', timeStyle: 'short' }) : '—');
 
 export default function Admin() {
   const [tab, setTab] = useState('stats');
@@ -15,6 +17,12 @@ export default function Admin() {
   const [search, setSearch] = useState('');
   const [demandes, setDemandes] = useState(null);
   const [news, setNews] = useState(null);
+  const [dossier, setDossier] = useState(null);
+  const [dossierBusy, setDossierBusy] = useState(false);
+  const [sending, setSending] = useState(false);
+  const [pdfUrl, setPdfUrl] = useState(null);
+  const [pdfTitle, setPdfTitle] = useState('');
+  const pdfUrlRef = useRef(null);
   const [msg, setMsg] = useState(null);
 
   const loadStats = () => api.get('/admin/dashboard').then((r) => setDash(r.data)).catch((e) => setMsg({ err: errMsg(e) }));
@@ -31,11 +39,76 @@ export default function Admin() {
 
   useEffect(() => { loadStats(); loadDemandes(); loadNews(); }, []); // eslint-disable-line react-hooks/exhaustive-deps
   useEffect(() => { loadUsers(); }, [filtre, statutFiltre, search]); // eslint-disable-line react-hooks/exhaustive-deps
+  useEffect(() => () => { if (pdfUrlRef.current) URL.revokeObjectURL(pdfUrlRef.current); }, []);
 
   const act = async (fn, okMessage) => {
     setMsg(null);
     try { await fn(); setMsg({ ok: okMessage }); loadUsers(); loadDemandes(); loadStats(); } catch (e) { setMsg({ err: errMsg(e) }); }
   };
+
+  const closePdf = () => {
+    if (pdfUrlRef.current) { URL.revokeObjectURL(pdfUrlRef.current); pdfUrlRef.current = null; }
+    setPdfUrl(null);
+  };
+
+  const openDossier = async (id) => {
+    setMsg(null);
+    closePdf();
+    setDossier(null);
+    try {
+      const r = await api.get(`/admin/demandes/${id}/dossier`);
+      setDossier(r.data);
+    } catch (e) { setMsg({ err: errMsg(e) }); }
+  };
+
+  const closeDossier = () => { closePdf(); setDossier(null); };
+
+  const viewPdf = async (kind) => {
+    if (!dossier) return;
+    setMsg(null);
+    try {
+      const path = kind === 'ameliorer'
+        ? `/demandes/${dossier.id}/cv-ameliorer`
+        : `/demandes/${dossier.id}/cv`;
+      const r = await api.get(path, { responseType: 'blob' });
+      closePdf();
+      const url = URL.createObjectURL(new Blob([r.data], { type: 'application/pdf' }));
+      pdfUrlRef.current = url;
+      setPdfTitle(kind === 'ameliorer'
+        ? `CV amélioré — ${dossier.candidat_nom}`
+        : `CV d’origine — ${dossier.candidat_nom}`);
+      setPdfUrl(url);
+    } catch (e) { setMsg({ err: errMsg(e) }); }
+  };
+
+  const improveCv = async () => {
+    if (!dossier) return;
+    setDossierBusy(true); setMsg(null);
+    try {
+      const r = await api.post(`/demandes/${dossier.id}/ameliorer-cv`);
+      const fresh = await api.get(`/admin/demandes/${dossier.id}/dossier`);
+      setDossier(fresh.data);
+      setMsg({ ok: r.data.message });
+      loadDemandes();
+    } catch (e) { setMsg({ err: errMsg(e) }); }
+    finally { setDossierBusy(false); }
+  };
+
+  const sendCv = async () => {
+    if (!dossier) return;
+    setSending(true); setMsg(null);
+    try {
+      const r = await api.post(`/admin/demandes/${dossier.id}/envoyer-cv`);
+      const fresh = await api.get(`/admin/demandes/${dossier.id}/dossier`);
+      setDossier(fresh.data);
+      const suffix = r.data.mode === 'log' ? ' (mode test : email journalisé, SMTP non configuré)' : '';
+      setMsg({ ok: r.data.message + suffix });
+      loadDemandes();
+    } catch (e) { setMsg({ err: errMsg(e) }); }
+    finally { setSending(false); }
+  };
+
+  const recommandations = Array.isArray(dossier?.analyse?.recommandations) ? dossier.analyse.recommandations : [];
 
   return (
     <main className="page">
@@ -43,7 +116,7 @@ export default function Admin() {
       <div className="tabs">
         <button type="button" className={tab === 'stats' ? 'on' : ''} onClick={() => setTab('stats')}>Vue d’ensemble</button>
         <button type="button" className={tab === 'users' ? 'on' : ''} onClick={() => setTab('users')}>Utilisateurs ({users ? users.length : '…'})</button>
-        <button type="button" className={tab === 'demandes' ? 'on' : ''} onClick={() => setTab('demandes')}>Demandes ({demandes ? demandes.length : '…'})</button>
+        <button type="button" className={tab === 'demandes' ? 'on' : ''} onClick={() => setTab('demandes')}>Dossiers candidats ({demandes ? demandes.length : '…'})</button>
         <button type="button" className={tab === 'news' ? 'on' : ''} onClick={() => setTab('news')}>Newsletter ({news ? news.length : '…'})</button>
       </div>
       {msg?.err && <Toast text={msg.err} type="err" onDone={() => setMsg(null)} />}
@@ -117,19 +190,30 @@ export default function Admin() {
       {tab === 'demandes' && (demandes === null
         ? <Loader size={64} />
         : demandes.length === 0
-          ? <p className="muted">Aucune demande.</p>
+          ? <p className="muted">Aucun dossier.</p>
           : (
             <table className="tbl">
-              <thead><tr><th>N°</th><th>Candidat</th><th>Rédacteur</th><th>Statut</th><th>Score</th><th>Date</th><th /></tr></thead>
+              <thead><tr>
+                <th>N°</th><th>Candidat</th><th>Poste visé</th><th>Rédacteur</th>
+                <th>Statut</th><th>Score</th><th>CV amélioré</th><th>Envoyé</th><th>Date</th><th />
+              </tr></thead>
               <tbody>
                 {demandes.map((d) => (
                   <tr key={d.id}>
-                    <td>{d.id}</td><td>{d.candidat_nom}</td><td>{d.redacteur_nom || '—'}</td>
+                    <td>{d.id}</td>
+                    <td><b>{d.candidat_nom}</b><br /><span className="muted">{d.candidat_email}</span></td>
+                    <td>{d.cv_titre || d.titre_poste || '—'}</td>
+                    <td>{d.redacteur_nom || '—'}</td>
                     <td><StatutBadge statut={d.statut} /></td>
                     <td>{Number.isFinite(Number(d.score)) ? `${Math.round(d.score)}/100` : '—'}</td>
+                    <td>{d.cv_ameliorer_at ? <span className="tag ok">Prêt</span> : <span className="muted">—</span>}</td>
+                    <td className="muted">{d.cv_envoye_at ? date(d.cv_envoye_at) : '—'}</td>
                     <td className="muted">{date(d.created_at)}</td>
                     <td>
+                      <button type="button" className="link" onClick={() => openDossier(d.id)}>Ouvrir le dossier</button>
+                      {' · '}
                       <select className="statut-select" defaultValue={d.statut}
+                        aria-label={`Statut de la demande ${d.id}`}
                         onChange={(e) => act(() => api.put(`/admin/demandes/${d.id}/status`, { statut: e.target.value }), `Demande n° ${d.id} : ${e.target.value}.`)}>
                         {['en_attente', 'en_cours', 'terminee', 'annulee'].map((s) => <option key={s} value={s}>{s}</option>)}
                       </select>
@@ -150,6 +234,76 @@ export default function Admin() {
               <tbody>{news.map((n) => <tr key={n.id}><td>{n.email}</td><td className="muted">{date(n.created_at)}</td></tr>)}</tbody>
             </table>
           ))}
+
+      {dossier && !pdfUrl && (
+        <div className="admin-modal-bg" onMouseDown={(e) => e.target === e.currentTarget && closeDossier()}>
+          <div className="admin-modal" role="dialog" aria-modal="true" aria-label={`Dossier n° ${dossier.id}`}>
+            <div className="admin-modal-head">
+              <div>
+                <h2>Dossier n° {dossier.id}</h2>
+                <p className="muted">{dossier.candidat_nom} · {dossier.candidat_email}</p>
+              </div>
+              <button type="button" className="admin-icon-btn" onClick={closeDossier} aria-label="Fermer"><Icon name="x" size={17} /></button>
+            </div>
+            <div className="admin-modal-body">
+              <div className="dossier-grid">
+                <div><span>Statut</span><b><StatutBadge statut={dossier.statut} /></b></div>
+                <div><span>Score CV</span><b>{Number.isFinite(Number(dossier.score)) ? `${Math.round(dossier.score)}/100` : '—'}</b></div>
+                <div><span>Poste visé</span><b>{dossier.cv_titre || dossier.titre_poste || '—'}</b></div>
+                <div><span>Ville</span><b>{dossier.ville || '—'}</b></div>
+                <div><span>Téléphone</span><b>{dossier.telephone || '—'}</b></div>
+                <div><span>Niveau d’études</span><b>{dossier.niveau_etudes || '—'}</b></div>
+                <div><span>Rédacteur</span><b>{dossier.redacteur_nom || 'Non assigné'}</b></div>
+                <div><span>Créé le</span><b>{date(dossier.created_at)}</b></div>
+              </div>
+
+              {dossier.competences && <p className="dossier-line"><b>Compétences :</b> {dossier.competences}</p>}
+              {dossier.bio && <p className="dossier-line"><b>Bio :</b> {dossier.bio}</p>}
+              {recommandations.length > 0 && (
+                <div className="dossier-line">
+                  <b>Recommandations IA :</b>
+                  <ul>{recommandations.map((r, i) => <li key={i}>{typeof r === 'string' ? r : JSON.stringify(r)}</li>)}</ul>
+                </div>
+              )}
+
+              <div className="dossier-actions">
+                <button type="button" className="admin-btn ghost" onClick={() => viewPdf('original')}>
+                  <Icon name="files" size={15} /> Voir le CV d’origine
+                </button>
+                <button type="button" className="admin-btn ghost" disabled={!dossier.cv_ameliorer_at}
+                  onClick={() => viewPdf('ameliorer')}>
+                  <Icon name="files" size={15} /> Voir le CV amélioré
+                </button>
+                <button type="button" className="admin-btn" disabled={dossierBusy} onClick={improveCv}>
+                  <Icon name="spark" size={15} /> {dossierBusy ? 'Amélioration en cours…' : dossier.cv_ameliorer_at ? 'Régénérer le CV (IA)' : 'Améliorer le CV (IA)'}
+                </button>
+                <button type="button" className="admin-btn primary" disabled={!dossier.cv_ameliorer_at || sending} onClick={sendCv}>
+                  <Icon name="mail" size={15} /> {sending ? 'Envoi en cours…' : 'Envoyer le CV amélioré par email'}
+                </button>
+              </div>
+
+              {dossier.cv_envoye_at && (
+                <p className="ok" style={{ marginTop: 14 }}>Dernier envoi : {date(dossier.cv_envoye_at)} à {dossier.candidat_email}</p>
+              )}
+              <p className="muted" style={{ margin: '12px 0 0', fontSize: 12 }}>
+                L’envoi utilise la configuration SMTP du serveur. Sans SMTP configuré, l’email est journalisé en mode test.
+              </p>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {pdfUrl && (
+        <div className="admin-modal-bg pdf" onMouseDown={(e) => e.target === e.currentTarget && closePdf()}>
+          <div className="admin-modal pdf" role="dialog" aria-modal="true" aria-label={pdfTitle}>
+            <div className="admin-modal-head">
+              <h2>{pdfTitle}</h2>
+              <button type="button" className="admin-icon-btn" onClick={closePdf} aria-label="Fermer"><Icon name="x" size={17} /></button>
+            </div>
+            <iframe className="admin-pdf-frame" src={pdfUrl} title={pdfTitle} />
+          </div>
+        </div>
+      )}
     </main>
   );
 }

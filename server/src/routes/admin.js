@@ -15,6 +15,8 @@ router.put('/admin/users/:id/approve', ...adminOnly, wrap(admin.approveUser));
 router.put('/admin/users/:id/reject', ...adminOnly, wrap(admin.rejectUser));
 router.patch('/admin/users/:id/statut', ...adminOnly, wrap(admin.setUserStatut));
 router.get('/admin/demandes', ...adminOnly, wrap(admin.listDemandes));
+router.get('/admin/demandes/:id/dossier', ...adminOnly, wrap(admin.getDossier));
+router.post('/admin/demandes/:id/envoyer-cv', ...adminOnly, wrap(admin.sendDossierCv));
 router.put('/admin/demandes/:id/status', ...adminOnly, wrap(admin.setDemandeStatut));
 router.patch('/admin/demandes/:id/status', ...adminOnly, wrap(admin.setDemandeStatut));
 

@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import api, { errMsg } from '../api';
 import Icon from './Icon';
+import NewsletterSend from './NewsletterSend';
 import Toast from './Toast';
 
 // IA rédacteur : génère une version améliorée du CV PDF via le serveur (Ollama
@@ -49,6 +50,7 @@ export default function CvAmelioration({ demandeId }) {
             <b><Icon name="spark" size={13} /> CV amélioré par l'IA</b>
             <span className="chip ok">Prêt</span>
             <button className="ghost sm btn-ai" onClick={dl}><Icon name="download" size={13} /> Télécharger le PDF</button>
+            <NewsletterSend demandeId={demandeId} ready compact />
           </div>
           <pre className="cv-am-text">{done.text}</pre>
           <p className="muted ai-note">Généré par l'IA — relisez-le avant envoi et gardez uniquement les faits exacts.</p>

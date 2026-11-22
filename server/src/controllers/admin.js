@@ -1,6 +1,7 @@
 import { db } from '../config/db.js';
 import { ApiError } from '../utils/ApiError.js';
 import { changeStatut } from './demandes.js';
+import { sendDossierCvEmail } from '../services/cvEmail.js';
 
 // === Dashboard ===
 export const dashboard = async (_req, res) => {
@@ -97,10 +98,13 @@ export const listDemandes = async (req, res) => {
   if (statut && ['en_attente', 'en_cours', 'terminee', 'annulee'].includes(statut)) { where.push('d.statut = ?'); params.push(statut); }
   const [rows] = await db.query(
     `SELECT d.id, d.statut, d.score, d.created_at, d.updated_at, d.titre_poste,
+            d.cv_ameliorer_at, d.cv_envoye_at,
             cu.nom AS candidat_nom, cu.email AS candidat_email,
+            c.titre_poste AS cv_titre, c.ville,
             ru.nom AS redacteur_nom
        FROM demandes d
        JOIN users cu ON cu.id = d.candidat_id
+       LEFT JOIN candidats c ON c.user_id = d.candidat_id
        LEFT JOIN users ru ON ru.id = d.redacteur_id
        ${where.length ? 'WHERE ' + where.join(' AND ') : ''}
       ORDER BY d.id DESC LIMIT 500`,
@@ -115,4 +119,40 @@ export const setDemandeStatut = async (req, res) => {
   const { statut } = req.body;
   const r = await changeStatut(id, statut, req.user);
   res.json({ message: 'Statut de la demande mis à jour.', ...r });
+};
+
+// Dossier complet d'un candidat, consultable par l'administrateur.
+export const getDossier = async (req, res) => {
+  const id = Number(req.params.id);
+  if (!Number.isInteger(id)) throw new ApiError(400, 'Identifiant invalide.');
+  const [rows] = await db.query(
+    `SELECT d.id, d.statut, d.score, d.created_at, d.updated_at, d.titre_poste,
+            d.cv_path, d.cv_ameliorer_at, d.cv_envoye_at, d.analyse_json,
+            cu.id AS candidat_id, cu.nom AS candidat_nom, cu.email AS candidat_email,
+            cu.created_at AS candidat_inscrit,
+            c.telephone, c.ville, c.titre_poste AS cv_titre, c.niveau_etudes,
+            c.competences, c.bio,
+            ru.nom AS redacteur_nom
+       FROM demandes d
+       JOIN users cu ON cu.id = d.candidat_id
+       LEFT JOIN candidats c ON c.user_id = d.candidat_id
+       LEFT JOIN users ru ON ru.id = d.redacteur_id
+      WHERE d.id = ?`, [id]
+  );
+  if (!rows.length) throw new ApiError(404, 'Dossier introuvable.');
+  const d = rows[0];
+  let analyse = null;
+  try {
+    analyse = typeof d.analyse_json === 'string' ? JSON.parse(d.analyse_json) : d.analyse_json;
+  } catch { /* analyse illisible : on l'ignore */ }
+  delete d.analyse_json;
+  res.json({ ...d, analyse, cv_ameliorer_disponible: Boolean(d.cv_ameliorer_at) });
+};
+
+// Envoie la version améliorée au candidat (pièce jointe PDF) depuis l'admin.
+export const sendDossierCv = async (req, res) => {
+  const id = Number(req.params.id);
+  if (!Number.isInteger(id)) throw new ApiError(400, 'Identifiant invalide.');
+  const source = req.body?.source === 'newsletter' ? 'newsletter' : 'admin';
+  res.json(await sendDossierCvEmail({ id, source }));
 };

@@ -63,11 +63,12 @@ C:\xampp\mysql\bin\mysql.exe -u root < server/database.sql
 ```
 (ou importer `server/database.sql` via phpMyAdmin dans la base `karriery`)
 
-Base déjà existante : appliquer les migrations (offres + candidatures + validation des rédacteurs) :
+Base déjà existante : appliquer les migrations (offres + candidatures + validation des rédacteurs + dossiers/email) :
 ```powershell
 C:\xampp\mysql\bin\mysql.exe -u root karriery < server/migrations/sprint-6-offres.sql
 C:\xampp\mysql\bin\mysql.exe -u root karriery < server/migrations/sprint-6-candidatures.sql
 C:\xampp\mysql\bin\mysql.exe -u root karriery < server/migrations/sprint-7-recruteur-approval.sql
+C:\xampp\mysql\bin\mysql.exe -u root karriery < server/migrations/sprint-8-dossier-email.sql
 ```
 
 ### 2. API (port 5000)
@@ -123,7 +124,22 @@ LLM_BASE_URL=
 LLM_API_KEY=
 LLM_MODEL=
 LLM_ASSISTANT_MODEL=
+# Envoi du CV amélioré (SMTP). SMTP_HOST vide = mode journal local (test).
+SMTP_HOST=
+SMTP_PORT=587
+SMTP_SECURE=false
+SMTP_USER=
+SMTP_PASS=
+MAIL_FROM=Karriery <no-reply@karriery.tn>
+NEWSLETTER_FROM=Karriery Newsletter <newsletter@karriery.tn>
 ```
+
+Sans `SMTP_HOST`, l'envoi du CV amélioré est simulé : le serveur journalise l'email
+(`[MAIL:LOG]`) et l'endpoint renvoie `"mode": "log"`. Renseigner les variables SMTP
+pour une vraie livraison (`"mode": "smtp"`).
+
+Le bouton **Envoyer par la newsletter** (dans le widget d’analyse IA du rédacteur)
+utilise `NEWSLETTER_FROM` comme expéditeur ; les envois depuis l’admin utilisent `MAIL_FROM`.
 
 ## Fonctionnalités
 
@@ -141,12 +157,20 @@ LLM_ASSISTANT_MODEL=
 - Messagerie avec les candidats, fichier de travail joints.
 - CRUD complet de ses offres d'emploi : Front-end, Back-end, Full-stack, Mobile, AI, IoT, Systèmes embarqués.
 - Réception des candidatures sur ses offres : lecture du message et du CV, accepter / refuser.
+- Widget d’analyse IA : **Envoyer par la newsletter** génère le CV amélioré si besoin et
+  l’envoie au candidat avec l’expéditeur « Karriery Newsletter »
+  (`POST /api/demandes/:id/envoyer-cv`).
 
 ### Admin
 - Vue d'ensemble (comptes, dossiers, score moyen).
 - Validation des nouveaux rédacteurs : liste filtrée « En attente », boutons **Approuver** / **Refuser**
   (`PUT /api/admin/users/:id/approve` et `PUT /api/admin/users/:id/reject`).
 - Gestion des utilisateurs avec filtres par rôle, statut et recherche textuelle (nom / email).
+- **Dossiers candidats** : consultation du profil complet, du CV d'origine, du CV amélioré
+  et des recommandations IA (`GET /api/admin/demandes/:id/dossier`).
+- Génération du CV amélioré depuis l'admin, puis envoi par email au candidat avec le PDF
+  en pièce jointe (`POST /api/admin/demandes/:id/envoyer-cv`). La date d'envoi est enregistrée
+  et une notification est créée pour le candidat.
 - Gestion des statuts de dossiers, annulation / réactivation de comptes.
 - Accès à **toutes** les offres (création, modification, suppression, attribution à un rédacteur).
 - Accès à **toutes** les candidatures et décision acceptée / refusée.

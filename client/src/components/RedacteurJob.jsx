@@ -4,6 +4,7 @@ import api, { errMsg } from '../api';
 import Badge from './Badge';
 import CvAmelioration from './CvAmelioration';
 import Icon from './Icon';
+import NewsletterSend from './NewsletterSend';
 import Toast from './Toast';
 import { initials } from '../layout/AppShell';
 
@@ -85,6 +86,7 @@ export default function RedacteurJob({ r, onDone }) {
                 <div className="llm-c fx"><h4><Icon name="star" size={13} /> Recommandations</h4>
                   <ul>{a.recommandations.map((x, i) => <li key={i}>{x}</li>)}</ul></div>
               </div>
+              <div className="llm-news"><NewsletterSend demandeId={r.id} compact onDone={onDone} /></div>
               <Link to={`/demandes/${r.id}`} className="llm-more">Voir l’analyse complète <Icon name="chev" size={14} /></Link>
             </div>
           )}
