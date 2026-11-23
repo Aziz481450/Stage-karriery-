@@ -5,6 +5,7 @@ import { useAuth } from '../AuthContext';
 import Badge, { LABEL } from '../components/Badge';
 import Icon from '../components/Icon';
 import Toast from '../components/Toast';
+import VoirProfil from '../components/VoirProfil';
 import { initials } from '../layout/AppShell';
 import './dashboard.css';
 
@@ -75,6 +76,7 @@ export default function DemandeDetail() {
 
           <div className="detail-actions">
             <button className="ghost" onClick={() => download(`/demandes/${d.id}/cv`, d.cv_nom)}><Icon name="download" size={16} /> Télécharger le CV</button>
+            {!isCand && <VoirProfil demandeId={d.id} />}
             <Link className="cta" to={`/demandes/${id}/messages`}><Icon name="send" size={16} /> Messagerie</Link>
           </div>
 

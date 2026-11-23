@@ -4,6 +4,7 @@ import CvAmelioration from './CvAmelioration';
 import Icon from './Icon';
 import NewsletterSend from './NewsletterSend';
 import Toast from './Toast';
+import VoirProfil from './VoirProfil';
 import { initials } from '../layout/AppShell';
 
 const tone = (s) => (s >= 75 ? 'ok' : s >= 50 ? 'warn' : 'bad');
@@ -57,6 +58,7 @@ export default function Sollicitation({ s, onDone }) {
           ? <span className={`chip sc ${tone(s.score)}`}>Score IA {s.score}/100</span>
           : <span className="chip">Analyse en cours</span>}
         <button className="ghost sm" onClick={viewCv}><Icon name="download" size={14} /> Voir le CV</button>
+        <VoirProfil demandeId={s.id} />
       </div>
 
       {a && (

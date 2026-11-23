@@ -411,6 +411,27 @@ export const getCvAmeliorer = async (req, res) => {
   res.send(buf);
 };
 
+// Profil du candidat associé à un dossier, consultable par les participants et l'admin.
+export const getDemandeProfil = async (req, res) => {
+  const id = Number(req.params.id);
+  if (!Number.isInteger(id)) throw new ApiError(400, 'Identifiant invalide.');
+  const [rows] = await db.query(
+    `SELECT d.id AS demande_id, d.candidat_id, d.redacteur_id, d.statut,
+            d.titre_poste AS dossier_titre, ROUND(d.score) AS score,
+            u.id, u.nom, u.email, u.photo, u.created_at AS inscrit_le,
+            c.telephone, c.ville, c.titre_poste, c.niveau_etudes, c.competences, c.bio
+       FROM demandes d
+       JOIN users u ON u.id = d.candidat_id
+       LEFT JOIN candidats c ON c.user_id = u.id
+      WHERE d.id = ?`, [id]
+  );
+  if (!rows.length) throw new ApiError(404, 'Dossier introuvable.');
+  if (!canView(rows[0], req.user))
+    throw new ApiError(403, 'Accès refusé : vous n\u2019êtes pas concerné par cette demande.');
+  const { candidat_id, redacteur_id, statut, ...profil } = rows[0];
+  res.json(profil);
+};
+
 // Bouton « Newsletter » depuis le widget d'analyse IA : envoie le CV amélioré
 // au candidat avec l'expéditeur Karriery Newsletter.
 export const sendCvNewsletter = async (req, res) => {

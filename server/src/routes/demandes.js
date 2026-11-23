@@ -30,6 +30,7 @@ router.patch('/demandes/:id/statut', requireAuth, requireRole('redacteur', 'admi
 router.get('/demandes/:id/cv', requireAuth, wrap(demanda.getDemandeCv));
 router.post('/demandes/:id/ameliorer-cv', requireAuth, requireRole('redacteur', 'admin'), wrap(demanda.ameliorerCv));
 router.get('/demandes/:id/cv-ameliorer', requireAuth, wrap(demanda.getCvAmeliorer));
+router.get('/demandes/:id/profil', requireAuth, wrap(demanda.getDemandeProfil));
 router.post('/demandes/:id/envoyer-cv', requireAuth, wrap(demanda.sendCvNewsletter));
 router.get('/demandes/:id/messages', requireAuth, wrap(mensaje.listMessages));
 router.post('/demandes/:id/messages', requireAuth, file(uploadFichier, 'fichier'), wrap(mensaje.createMessageRest));

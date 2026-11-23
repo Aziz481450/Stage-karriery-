@@ -6,6 +6,7 @@ import CvAmelioration from './CvAmelioration';
 import Icon from './Icon';
 import NewsletterSend from './NewsletterSend';
 import Toast from './Toast';
+import VoirProfil from './VoirProfil';
 import { initials } from '../layout/AppShell';
 
 const tone = (s) => (s >= 75 ? 'ok' : s >= 50 ? 'warn' : 'bad');
@@ -56,6 +57,7 @@ export default function RedacteurJob({ r, onDone }) {
           ? <span className={`chip sc ${tone(r.score)}`}>Score IA {r.score}/100</span>
           : <span className="chip">Analyse en cours</span>}
         <button className="ghost sm" onClick={viewCv}><Icon name="download" size={14} /> Voir le CV</button>
+        <VoirProfil demandeId={r.id} />
         <CvAmelioration demandeId={r.id} />
         {r.statut === 'en_cours' && (
           <button className="ghost sm" onClick={terminer} disabled={busy}><Icon name="check" size={14} /> Terminer</button>

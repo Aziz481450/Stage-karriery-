@@ -154,6 +154,8 @@ utilise `NEWSLETTER_FROM` comme expéditeur ; les envois depuis l’admin utilis
 - Inscription soumise à validation administrative : le compte est créé en attente et
   la connexion est bloquée jusqu'à approbation (aucun jeton n'est délivré à l'inscription).
 - Profil (spécialité, disponibilité), dossiers attribués, traitement.
+- Bouton **Voir le profil** sur chaque dossier : fiche complète du candidat
+  (coordonnées, compétences, bio, photo) sans quitter la liste (`GET /api/demandes/:id/profil`).
 - Messagerie avec les candidats, fichier de travail joints.
 - CRUD complet de ses offres d'emploi : Front-end, Back-end, Full-stack, Mobile, AI, IoT, Systèmes embarqués.
 - Réception des candidatures sur ses offres : lecture du message et du CV, accepter / refuser.
