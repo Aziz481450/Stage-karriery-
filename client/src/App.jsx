@@ -6,6 +6,7 @@ import Home from './pages/Home';
 import Dashboard from './pages/Dashboard';
 import ProfilCandidat from './pages/ProfilCandidat';
 import ProfilRedacteur from './pages/ProfilRedacteur';
+import ProfilAdmin from './pages/ProfilAdmin';
 import Demandes from './pages/Demandes';
 import DemandeDetail from './pages/DemandeDetail';
 import Messagerie from './pages/Messagerie';
@@ -71,6 +72,7 @@ export default function App() {
           <Route path="/admin" element={<Role roles={['admin']}><Admin /></Role>} />
           <Route path="/admin/offres" element={<Role roles={['admin']}><OffresManage /></Role>} />
           <Route path="/admin/candidatures" element={<Role roles={['admin']}><Candidatures /></Role>} />
+          <Route path="/admin/profil" element={<Role roles={['admin']}><ProfilAdmin /></Role>} />
         </Route>
         <Route path="*" element={<Navigate to="/" replace />} />
       </Routes>

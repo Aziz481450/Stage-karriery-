@@ -13,7 +13,7 @@ import './home.css';
 const CEO = { nom: 'Halim Boussada', role: 'Fondateur et CEO de Karriery' };
 
 const features = [
-  { I: IconUsers, t: 'Espace dédié à chaque rôle', d: 'Candidats et rédacteurs ont chacun leur profil, avec les informations qui comptent pour leur travail.' },
+  { I: IconUsers, t: 'Espace dédié à chaque rôle', d: 'Candidats, rédacteurs et administrateurs ont chacun leur profil, avec les informations qui comptent pour leur travail.' },
   { I: IconFileUp, t: 'Dépôt de CV en PDF', d: 'Importez votre CV une fois : il est rattaché à votre dossier et visible par votre rédacteur.' },
   { I: IconSparkles, t: 'Analyse par intelligence artificielle', d: 'Un score sur 100 et des recommandations concrètes pour renforcer chaque partie de votre CV.' },
   { I: IconUserCheck, t: 'Rédacteur attribué automatiquement', d: 'Votre dossier est confié à un rédacteur selon sa spécialité et sa disponibilité.' },

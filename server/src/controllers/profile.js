@@ -5,9 +5,17 @@ import { saveBuffer, removeStoredFile, readStoredFile, buildStorageName } from '
 
 const FIELDS = {
   candidats: ['telephone', 'ville', 'titre_poste', 'niveau_etudes', 'competences', 'bio'],
-  redacteurs: ['specialite', 'annees_experience', 'langues', 'bio', 'disponible']
+  redacteurs: ['specialite', 'annees_experience', 'langues', 'bio', 'disponible'],
+  admins: ['telephone', 'ville', 'fonction', 'bio']
 };
 const INT_FIELDS = new Set(['annees_experience', 'disponible']);
+const PROFILE_TABLES = new Set(Object.keys(FIELDS));
+
+// Les profils admin n'existaient pas dans les anciennes bases : crée la ligne au besoin.
+const ensureProfileRow = async (table, userId) => {
+  if (!PROFILE_TABLES.has(table)) throw new ApiError(400, 'Type de profil inconnu.');
+  await db.query(`INSERT IGNORE INTO ${table}(user_id) VALUES(?)`, [userId]);
+};
 
 // Nettoie les champs autorisés : chaînes trimées, champ vide -> NULL, entiers validés
 const clean = (table, body) => {
@@ -29,12 +37,14 @@ const clean = (table, body) => {
 };
 
 export const getProfile = (table) => async (req, res) => {
+  await ensureProfileRow(table, req.user.id);
   const [rows] = await db.query(
     `SELECT u.nom,u.email,u.photo,p.* FROM ${table} p JOIN users u ON u.id=p.user_id WHERE p.user_id=?`, [req.user.id]);
   res.json(rows[0] || {});
 };
 
 export const updateProfile = (table) => async (req, res) => {
+  await ensureProfileRow(table, req.user.id);
   if (req.body.nom !== undefined) {
     const nom = String(req.body.nom).trim();
     if (nom.length < 2 || nom.length > 120)

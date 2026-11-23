@@ -40,7 +40,7 @@ app.post('/api/auth/login', limit('login', 15 * 60000, 10), wrap(login));
 app.post('/api/auth/logout', requireAuth, logout);
 app.get('/api/auth/me', requireAuth, wrap(me));
 
-for (const [role, table] of [['candidat', 'candidats'], ['redacteur', 'redacteurs']]) {
+for (const [role, table] of [['candidat', 'candidats'], ['redacteur', 'redacteurs'], ['admin', 'admins']]) {
   app.get(`/api/${role}/profil`, requireAuth, requireRole(role), wrap(getProfile(table)));
   app.put(`/api/${role}/profil`, requireAuth, requireRole(role), wrap(updateProfile(table)));
 }

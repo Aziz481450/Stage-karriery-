@@ -21,7 +21,7 @@ const NAV = {
     { group: 'Autres', items: [['mailto:info@karriery.com', 'Aide', 'help']] },
   ],
   admin: [
-    { group: 'Menu', items: [['/admin', 'Administration', 'admin'], ['/admin/offres', 'Offres d’emploi', 'brief'], ['/admin/candidatures', 'Candidatures', 'user']] },
+    { group: 'Menu', items: [['/admin', 'Administration', 'admin'], ['/admin/offres', 'Offres d’emploi', 'brief'], ['/admin/candidatures', 'Candidatures', 'user'], ['/admin/profil', 'Mon profil', 'user']] },
     { group: 'Autres', items: [['mailto:info@karriery.com', 'Aide', 'help']] },
   ],
 };
@@ -117,11 +117,9 @@ export default function AppShell() {
               </button>
               {prof && (
                 <div className="pm" role="menu">
-                  {user.role !== 'admin' && (
-                    <Link to={`/${user.role}/profil`} role="menuitem" onClick={() => setProf(false)}>
-                      <Icon name="user" size={16} /> Modifier le profil
-                    </Link>
-                  )}
+                  <Link to={`/${user.role}/profil`} role="menuitem" onClick={() => setProf(false)}>
+                    <Icon name="user" size={16} /> Modifier le profil
+                  </Link>
                   <a href="mailto:info@karriery.com" role="menuitem"><Icon name="help" size={16} /> Aide</a>
                   <button onClick={logout} role="menuitem"><Icon name="logout" size={16} /> Se déconnecter</button>
                 </div>

@@ -6,7 +6,7 @@ import Toast from '../components/Toast';
 
 const initials = (n = '') => n.split(' ').filter(Boolean).map((w) => w[0]).slice(0, 2).join('').toUpperCase();
 
-export default function ProfileForm({ endpoint, title, fields }) {
+export default function ProfileForm({ endpoint, title, fields, note }) {
   const { refresh } = useAuth();
   const [d, setD] = useState(null);
   const [msg, setMsg] = useState(null);
@@ -66,7 +66,7 @@ export default function ProfileForm({ endpoint, title, fields }) {
   };
   return (
     <main className="page"><h1>{title}</h1>
-      <p className="muted pf-note">Ces informations personnalisent votre accompagnement et aident l’analyse de vos CV par l’IA.</p>
+      <p className="muted pf-note">{note || 'Ces informations personnalisent votre accompagnement et aident l’analyse de vos CV par l’IA.'}</p>
       <div className="photo-row">
         <span className="photo-av">
           {d.photo ? <img src={photoUrl({ id: d.user_id || d.id, photo: d.photo })} alt="" /> : initials(d.nom)}

@@ -63,12 +63,13 @@ C:\xampp\mysql\bin\mysql.exe -u root < server/database.sql
 ```
 (ou importer `server/database.sql` via phpMyAdmin dans la base `karriery`)
 
-Base déjà existante : appliquer les migrations (offres + candidatures + validation des rédacteurs + dossiers/email) :
+Base déjà existante : appliquer les migrations (offres + candidatures + validation des rédacteurs + dossiers/email + profil admin) :
 ```powershell
 C:\xampp\mysql\bin\mysql.exe -u root karriery < server/migrations/sprint-6-offres.sql
 C:\xampp\mysql\bin\mysql.exe -u root karriery < server/migrations/sprint-6-candidatures.sql
 C:\xampp\mysql\bin\mysql.exe -u root karriery < server/migrations/sprint-7-recruteur-approval.sql
 C:\xampp\mysql\bin\mysql.exe -u root karriery < server/migrations/sprint-8-dossier-email.sql
+C:\xampp\mysql\bin\mysql.exe -u root karriery < server/migrations/sprint-9-admin-profil.sql
 ```
 
 ### 2. API (port 5000)
@@ -164,6 +165,9 @@ utilise `NEWSLETTER_FROM` comme expéditeur ; les envois depuis l’admin utilis
   (`POST /api/demandes/:id/envoyer-cv`).
 
 ### Admin
+- Profil administrateur modifiable depuis la sidebar ou le menu avatar
+  (nom, photo, téléphone, ville, fonction, présentation) : `/admin/profil`
+  (`GET` et `PUT /api/admin/profil`).
 - Vue d'ensemble (comptes, dossiers, score moyen).
 - Validation des nouveaux rédacteurs : liste filtrée « En attente », boutons **Approuver** / **Refuser**
   (`PUT /api/admin/users/:id/approve` et `PUT /api/admin/users/:id/reject`).

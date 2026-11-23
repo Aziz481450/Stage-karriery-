@@ -22,6 +22,11 @@ CREATE TABLE redacteurs(
   bio TEXT, disponible TINYINT(1) DEFAULT 1,
   FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE
 );
+CREATE TABLE admins(
+  user_id INT PRIMARY KEY,
+  telephone VARCHAR(30), ville VARCHAR(80), fonction VARCHAR(120), bio TEXT,
+  FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE
+);
 CREATE TABLE newsletter(
   id INT AUTO_INCREMENT PRIMARY KEY,
   email VARCHAR(160) NOT NULL UNIQUE,
