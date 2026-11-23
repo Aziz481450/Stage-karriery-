@@ -168,6 +168,9 @@ utilise `NEWSLETTER_FROM` comme expéditeur ; les envois depuis l’admin utilis
 - Profil administrateur modifiable depuis la sidebar ou le menu avatar
   (nom, photo, téléphone, ville, fonction, présentation) : `/admin/profil`
   (`GET` et `PUT /api/admin/profil`).
+- Création d’autres comptes administrateurs depuis l’onglet **Utilisateurs**
+  (bouton **Nouvel administrateur**) : compte actif immédiat et profil admin créé
+  en même temps (`POST /api/admin/users`).
 - Vue d'ensemble (comptes, dossiers, score moyen).
 - Validation des nouveaux rédacteurs : liste filtrée « En attente », boutons **Approuver** / **Refuser**
   (`PUT /api/admin/users/:id/approve` et `PUT /api/admin/users/:id/reject`).

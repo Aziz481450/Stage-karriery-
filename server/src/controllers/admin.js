@@ -1,3 +1,4 @@
+import bcrypt from 'bcrypt';
 import { db } from '../config/db.js';
 import { ApiError } from '../utils/ApiError.js';
 import { changeStatut } from './demandes.js';
@@ -30,6 +31,53 @@ export const listUsers = async (req, res) => {
     ${where.length ? 'WHERE ' + where.join(' AND ') : ''} ORDER BY id DESC LIMIT 500`;
   const [rows] = await db.query(sql, params);
   res.json(rows);
+};
+
+const opt = (value, max) => {
+  if (value === undefined || value === null) return null;
+  const s = String(value).trim().slice(0, max);
+  return s || null;
+};
+
+// Création d'un administrateur depuis le panneau admin : compte actif immédiatement
+// et ligne de profil créée en même temps (voir migration sprint-9-admin-profil.sql).
+export const createAdmin = async (req, res) => {
+  const nom = String(req.body?.nom || '').trim();
+  const email = String(req.body?.email || '').trim().toLowerCase();
+  const password = String(req.body?.password || '');
+
+  if (nom.length < 2 || nom.length > 120)
+    throw new ApiError(400, 'Nom invalide (2 à 120 caractères).');
+  if (email.length > 160 || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email))
+    throw new ApiError(400, 'Email invalide.');
+  if (password.length < 8)
+    throw new ApiError(400, 'Mot de passe : 8 caractères minimum.');
+
+  const [dup] = await db.query('SELECT id FROM users WHERE email=?', [email]);
+  if (dup.length) throw new ApiError(409, 'Cet email est déjà utilisé.');
+
+  const hash = await bcrypt.hash(password, 10);
+  let id;
+  try {
+    const [r] = await db.query(
+      "INSERT INTO users(nom,email,mot_de_passe,role,statut) VALUES(?,?,?,'admin','actif')",
+      [nom, email, hash]
+    );
+    id = r.insertId;
+  } catch (e) {
+    if (e.code === 'ER_DUP_ENTRY') throw new ApiError(409, 'Cet email est déjà utilisé.');
+    throw e;
+  }
+
+  await db.query(
+    'INSERT INTO admins(user_id, telephone, ville, fonction, bio) VALUES(?,?,?,?,?)',
+    [id, opt(req.body?.telephone, 30), opt(req.body?.ville, 80), opt(req.body?.fonction, 120), opt(req.body?.bio, 65000)]
+  );
+
+  res.status(201).json({
+    message: 'Compte administrateur créé.',
+    user: { id, nom, email, role: 'admin', statut: 'actif' }
+  });
 };
 
 export const setUserStatut = async (req, res) => {

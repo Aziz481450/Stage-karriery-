@@ -7,6 +7,7 @@ import Toast from '../components/Toast';
 import './admin.css';
 
 const date = (d) => (d ? new Date(d).toLocaleString('fr-FR', { dateStyle: 'short', timeStyle: 'short' }) : '—');
+const EMPTY_ADMIN = { nom: '', email: '', password: '', telephone: '', ville: '', fonction: '', bio: '' };
 
 export default function Admin() {
   const [tab, setTab] = useState('stats');
@@ -24,6 +25,9 @@ export default function Admin() {
   const [pdfTitle, setPdfTitle] = useState('');
   const pdfUrlRef = useRef(null);
   const [msg, setMsg] = useState(null);
+  const [creatingAdmin, setCreatingAdmin] = useState(false);
+  const [adminBusy, setAdminBusy] = useState(false);
+  const [adminForm, setAdminForm] = useState(EMPTY_ADMIN);
 
   const loadStats = () => api.get('/admin/dashboard').then((r) => setDash(r.data)).catch((e) => setMsg({ err: errMsg(e) }));
   const userParams = () => {
@@ -44,6 +48,29 @@ export default function Admin() {
   const act = async (fn, okMessage) => {
     setMsg(null);
     try { await fn(); setMsg({ ok: okMessage }); loadUsers(); loadDemandes(); loadStats(); } catch (e) { setMsg({ err: errMsg(e) }); }
+  };
+
+  const setAdminField = (k, v) => setAdminForm((f) => ({ ...f, [k]: v }));
+
+  const closeAdminForm = () => {
+    setCreatingAdmin(false);
+    setAdminForm(EMPTY_ADMIN);
+    setMsg(null);
+  };
+
+  const submitAdmin = async (e) => {
+    e.preventDefault();
+    setAdminBusy(true); setMsg(null);
+    try {
+      const r = await api.post('/admin/users', adminForm);
+      closeAdminForm();
+      setFiltre('admin');
+      setSearch('');
+      setStatutFiltre('');
+      loadStats();
+      setMsg({ ok: r.data.message });
+    } catch (err) { setMsg({ err: errMsg(err) }); }
+    finally { setAdminBusy(false); }
   };
 
   const closePdf = () => {
@@ -129,6 +156,7 @@ export default function Admin() {
             <div className="kpi"><span>Comptes actifs</span><strong>{dash.users.filter((u) => u.statut === 'actif').reduce((s, u) => s + u.n, 0)}</strong></div>
             <div className="kpi"><span>Candidats</span><strong>{dash.users.filter((u) => u.role === 'candidat').reduce((s, u) => s + u.n, 0)}</strong></div>
             <div className="kpi"><span>Rédacteurs</span><strong>{dash.users.filter((u) => u.role === 'redacteur').reduce((s, u) => s + u.n, 0)}</strong></div>
+            <div className="kpi"><span>Administrateurs</span><strong>{dash.users.filter((u) => u.role === 'admin' && u.statut === 'actif').reduce((s, u) => s + u.n, 0)}</strong></div>
             <div className="kpi"><span>Rédacteurs à valider</span><strong>{dash.users.filter((u) => u.role === 'redacteur' && u.statut === 'en_attente').reduce((s, u) => s + u.n, 0)}</strong></div>
             <div className="kpi"><span>Score moyen</span><strong>{dash.scores.moyenne || 0}/100</strong></div>
           </div>
@@ -143,15 +171,20 @@ export default function Admin() {
               </button>
             ))}
           </div>
-          <div className="admin-filters">
-            <input type="search" value={search} onChange={(e) => setSearch(e.target.value)}
-              placeholder="Rechercher par nom ou email…" aria-label="Rechercher un utilisateur" />
-            <select value={statutFiltre} onChange={(e) => setStatutFiltre(e.target.value)} aria-label="Filtrer par statut">
-              <option value="">Tous les statuts</option>
-              <option value="en_attente">En attente</option>
-              <option value="actif">Actif</option>
-              <option value="annule">Annulé</option>
-            </select>
+          <div className="admin-toolbar">
+            <div className="admin-filters">
+              <input type="search" value={search} onChange={(e) => setSearch(e.target.value)}
+                placeholder="Rechercher par nom ou email…" aria-label="Rechercher un utilisateur" />
+              <select value={statutFiltre} onChange={(e) => setStatutFiltre(e.target.value)} aria-label="Filtrer par statut">
+                <option value="">Tous les statuts</option>
+                <option value="en_attente">En attente</option>
+                <option value="actif">Actif</option>
+                <option value="annule">Annulé</option>
+              </select>
+            </div>
+            <button type="button" className="admin-btn primary" onClick={() => { setMsg(null); setCreatingAdmin(true); }}>
+              <Icon name="plus" size={15} /> Nouvel administrateur
+            </button>
           </div>
           {users === null
             ? <Loader size={64} />
@@ -289,6 +322,52 @@ export default function Admin() {
                 L’envoi utilise la configuration SMTP du serveur. Sans SMTP configuré, l’email est journalisé en mode test.
               </p>
             </div>
+          </div>
+        </div>
+      )}
+
+      {creatingAdmin && (
+        <div className="admin-modal-bg" onMouseDown={(e) => e.target === e.currentTarget && closeAdminForm()}>
+          <div className="admin-modal admin-create" role="dialog" aria-modal="true" aria-label="Créer un administrateur">
+            <div className="admin-modal-head">
+              <div>
+                <h2>Nouvel administrateur</h2>
+                <p className="muted">Le compte sera actif immédiatement et pourra se connecter avec l’email indiqué.</p>
+              </div>
+              <button type="button" className="admin-icon-btn" onClick={closeAdminForm} aria-label="Fermer"><Icon name="x" size={17} /></button>
+            </div>
+            <form className="admin-modal-body admin-form" onSubmit={submitAdmin}>
+              <div className="admin-form-grid">
+                <label>Nom complet
+                  <input value={adminForm.nom} onChange={(e) => setAdminField('nom', e.target.value)} minLength={2} maxLength={120} required />
+                </label>
+                <label>Email
+                  <input type="email" value={adminForm.email} onChange={(e) => setAdminField('email', e.target.value)} maxLength={160} required />
+                </label>
+                <label>Mot de passe
+                  <input type="password" value={adminForm.password} onChange={(e) => setAdminField('password', e.target.value)} minLength={8} required />
+                </label>
+                <label>Téléphone
+                  <input value={adminForm.telephone} onChange={(e) => setAdminField('telephone', e.target.value)} maxLength={30} />
+                </label>
+                <label>Ville
+                  <input value={adminForm.ville} onChange={(e) => setAdminField('ville', e.target.value)} maxLength={80} />
+                </label>
+                <label>Fonction
+                  <input value={adminForm.fonction} onChange={(e) => setAdminField('fonction', e.target.value)} maxLength={120} placeholder="ex. responsable recrutement" />
+                </label>
+                <label className="full">Présentation
+                  <textarea rows="3" value={adminForm.bio} onChange={(e) => setAdminField('bio', e.target.value)} />
+                </label>
+              </div>
+              <p className="muted admin-form-hint">Le mot de passe doit contenir au moins 8 caractères. L’adresse email doit être unique.</p>
+              <div className="dossier-actions">
+                <button type="submit" className="admin-btn primary" disabled={adminBusy}>
+                  <Icon name="plus" size={15} /> {adminBusy ? 'Création…' : 'Créer l’administrateur'}
+                </button>
+                <button type="button" className="admin-btn ghost" onClick={closeAdminForm}>Annuler</button>
+              </div>
+            </form>
           </div>
         </div>
       )}

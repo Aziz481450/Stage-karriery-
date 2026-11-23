@@ -9,6 +9,7 @@ const adminOnly = [requireAuth, requireRole('admin')];
 router.get('/admin/dashboard', ...adminOnly, wrap(admin.dashboard));
 router.get('/admin/stats', ...adminOnly, wrap(admin.dashboard));
 router.get('/admin/users', ...adminOnly, wrap(admin.listUsers));
+router.post('/admin/users', ...adminOnly, wrap(admin.createAdmin));
 router.put('/admin/users/:id/cancel', ...adminOnly, wrap(admin.cancelUser));
 router.put('/admin/users/:id/activate', ...adminOnly, wrap(admin.activateUser));
 router.put('/admin/users/:id/approve', ...adminOnly, wrap(admin.approveUser));
