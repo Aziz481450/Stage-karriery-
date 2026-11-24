@@ -32,6 +32,17 @@ CREATE TABLE newsletter(
   email VARCHAR(160) NOT NULL UNIQUE,
   created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
+CREATE TABLE newsletter_campagnes(
+  id INT AUTO_INCREMENT PRIMARY KEY,
+  objet VARCHAR(200) NOT NULL,
+  contenu_json LONGTEXT NOT NULL,
+  destinataires INT NOT NULL DEFAULT 0,
+  succes INT NOT NULL DEFAULT 0,
+  echecs INT NOT NULL DEFAULT 0,
+  mode VARCHAR(10) NOT NULL,
+  expediteur VARCHAR(200) NOT NULL,
+  created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
 
 -- ===== Sprint 2/3/4 =====
 CREATE TABLE demandes(

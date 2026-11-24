@@ -63,13 +63,14 @@ C:\xampp\mysql\bin\mysql.exe -u root < server/database.sql
 ```
 (ou importer `server/database.sql` via phpMyAdmin dans la base `karriery`)
 
-Base déjà existante : appliquer les migrations (offres + candidatures + validation des rédacteurs + dossiers/email + profil admin) :
+Base déjà existante : appliquer les migrations (offres + candidatures + validation des rédacteurs + dossiers/email + profil admin + campagnes newsletter) :
 ```powershell
 C:\xampp\mysql\bin\mysql.exe -u root karriery < server/migrations/sprint-6-offres.sql
 C:\xampp\mysql\bin\mysql.exe -u root karriery < server/migrations/sprint-6-candidatures.sql
 C:\xampp\mysql\bin\mysql.exe -u root karriery < server/migrations/sprint-7-recruteur-approval.sql
 C:\xampp\mysql\bin\mysql.exe -u root karriery < server/migrations/sprint-8-dossier-email.sql
 C:\xampp\mysql\bin\mysql.exe -u root karriery < server/migrations/sprint-9-admin-profil.sql
+C:\xampp\mysql\bin\mysql.exe -u root karriery < server/migrations/sprint-10-newsletter-campaigns.sql
 ```
 
 ### 2. API (port 5000)
@@ -139,8 +140,10 @@ Sans `SMTP_HOST`, l'envoi du CV amélioré est simulé : le serveur journalise l
 (`[MAIL:LOG]`) et l'endpoint renvoie `"mode": "log"`. Renseigner les variables SMTP
 pour une vraie livraison (`"mode": "smtp"`).
 
-Le bouton **Envoyer par la newsletter** (dans le widget d’analyse IA du rédacteur)
-utilise `NEWSLETTER_FROM` comme expéditeur ; les envois depuis l’admin utilisent `MAIL_FROM`.
+Le bouton **Envoyer par la newsletter** (widget d’analyse IA du rédacteur) et les campagnes
+créées depuis l’onglet Newsletter utilisent `NEWSLETTER_FROM` comme expéditeur ; les envois
+de CV depuis l’admin utilisent `MAIL_FROM`. Sans SMTP configuré, les campagnes sont
+journalisées en mode test et renvoient `"mode": "log"`.
 
 ## Fonctionnalités
 
@@ -183,6 +186,11 @@ utilise `NEWSLETTER_FROM` comme expéditeur ; les envois depuis l’admin utilis
 - Gestion des statuts de dossiers, annulation / réactivation de comptes.
 - Accès à **toutes** les offres (création, modification, suppression, attribution à un rédacteur).
 - Accès à **toutes** les candidatures et décision acceptée / refusée.
+- **Composeur de newsletter** dans l’onglet Newsletter : objet + introduction et cinq rubriques
+  activables (nouvelle offre avec poste/salaire et lien de candidature, career story,
+  local market insight, success stories, spotlight on the writers avec exemple de CV
+  avant/après soumis à autorisation et bouton « Book this writer »). Envoi à tous les inscrits,
+  historique des campagnes et liste des inscrits (`POST /api/admin/newsletter/envoyer`).
 
 ### Offres d'emploi (Sprint 6)
 - Table `offres` (voir `server/migrations/sprint-6-offres.sql` à appliquer sur une base existante).
@@ -201,6 +209,16 @@ utilise `NEWSLETTER_FROM` comme expéditeur ; les envois depuis l’admin utilis
   accessible uniquement au candidat, au rédacteur concerné et à l'admin.
 - Le bouton **Voir le CV** télécharge le PDF via l'API authentifiée (le JWT ne peut pas
   être envoyé par un simple lien) et l'affiche dans un lecteur intégré à la page.
+
+### Newsletter (Sprint 10)
+- Table `newsletter_campagnes` (`server/migrations/sprint-10-newsletter-campaigns.sql`) :
+  objet, contenu JSON, nombre de destinataires, succès/échecs, mode et expéditeur.
+- Routes admin : `GET /api/admin/newsletter` (inscrits), `GET /api/admin/newsletter/campagnes`,
+  `GET /api/admin/newsletter/ecrivains`, `POST /api/admin/newsletter/envoyer`.
+- Route publique d’inscription : `POST /api/newsletter`.
+- Le modèle d’email est responsive, échappe tout le texte saisi et n’accepte que des URLs
+  http(s), `mailto:` ou relatives (résolues avec `CLIENT_URL`).
+- La rubrique « Spotlight on the writers » exige une case d’autorisation cochée avant l’envoi.
 
 ### Temps réel
 - Socket.IO : messages, présence en ligne, notifications, indicateur de frappe.

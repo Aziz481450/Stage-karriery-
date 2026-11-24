@@ -8,7 +8,7 @@ const secure = String(process.env.SMTP_SECURE || '').toLowerCase() === 'true' ||
 const user = String(process.env.SMTP_USER || '').trim();
 const pass = String(process.env.SMTP_PASS || '');
 const from = String(process.env.MAIL_FROM || 'Karriery <no-reply@karriery.tn>').trim();
-const newsletterFrom = String(process.env.NEWSLETTER_FROM || 'Karriery Newsletter <newsletter@karriery.tn>').trim();
+export const newsletterFrom = String(process.env.NEWSLETTER_FROM || 'Karriery Newsletter <newsletter@karriery.tn>').trim();
 
 export const mailMode = host ? 'smtp' : 'log';
 
@@ -58,6 +58,13 @@ export async function sendImprovedCvEmail({ to, name, demandeId, filename, conte
     console.log(`[MAIL:LOG] ${isNewsletter ? 'Newsletter' : 'Admin'} — CV amélioré pour ${to} (dossier ${demandeId}) — pièce jointe ${filename}`);
   }
   return { mode: mailMode, messageId: info.messageId, source, sender };
+}
+
+// Envoi générique d'une campagne newsletter, avec l'expéditeur dédié.
+export async function sendNewsletterEmail({ to, subject, text, html }) {
+  const info = await transporter.sendMail({ from: newsletterFrom, to, subject, text, html });
+  if (mailMode === 'log') console.log(`[MAIL:LOG] Newsletter — campagne envoyée à ${to}`);
+  return { mode: mailMode, messageId: info.messageId, sender: newsletterFrom };
 }
 
 const escapeHtml = (s) => String(s).replace(/[&<>"']/g, (c) =>

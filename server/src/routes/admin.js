@@ -1,6 +1,8 @@
 import { Router } from 'express';
 import { requireAuth, requireRole } from '../middlewares/auth.js';
 import * as admin from '../controllers/admin.js';
+import * as newsletter from '../controllers/newsletter.js';
+import { limit } from '../middlewares/limit.js';
 
 const router = Router();
 const wrap = (fn) => (req, res, next) => fn(req, res, next).catch(next);
@@ -20,6 +22,11 @@ router.get('/admin/demandes/:id/dossier', ...adminOnly, wrap(admin.getDossier));
 router.post('/admin/demandes/:id/envoyer-cv', ...adminOnly, wrap(admin.sendDossierCv));
 router.put('/admin/demandes/:id/status', ...adminOnly, wrap(admin.setDemandeStatut));
 router.patch('/admin/demandes/:id/status', ...adminOnly, wrap(admin.setDemandeStatut));
+
+// Newsletter : composeur admin, historique et sélection des rédacteurs.
+router.get('/admin/newsletter/campagnes', ...adminOnly, wrap(newsletter.listCampaigns));
+router.get('/admin/newsletter/ecrivains', ...adminOnly, wrap(newsletter.listWriters));
+router.post('/admin/newsletter/envoyer', limit('newsletter-send', 60000, 5), ...adminOnly, wrap(newsletter.sendCampaign));
 
 // Compatibilité (API existante conservée)
 router.get('/admin/utilisateurs', ...adminOnly, wrap(admin.listUsers));

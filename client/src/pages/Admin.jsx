@@ -4,6 +4,7 @@ import Icon from '../components/Icon';
 import StatutBadge from '../components/StatutBadge';
 import Loader from '../components/Loader';
 import Toast from '../components/Toast';
+import NewsletterComposer from '../components/NewsletterComposer';
 import './admin.css';
 
 const date = (d) => (d ? new Date(d).toLocaleString('fr-FR', { dateStyle: 'short', timeStyle: 'short' }) : '—');
@@ -18,6 +19,11 @@ export default function Admin() {
   const [search, setSearch] = useState('');
   const [demandes, setDemandes] = useState(null);
   const [news, setNews] = useState(null);
+  const [campaigns, setCampaigns] = useState(null);
+  const [writers, setWriters] = useState([]);
+  const [offers, setOffers] = useState([]);
+  const [composerOpen, setComposerOpen] = useState(false);
+  const [newsBusy, setNewsBusy] = useState(false);
   const [dossier, setDossier] = useState(null);
   const [dossierBusy, setDossierBusy] = useState(false);
   const [sending, setSending] = useState(false);
@@ -40,9 +46,20 @@ export default function Admin() {
   const loadUsers = () => api.get('/admin/users', { params: userParams() }).then((r) => setUsers(r.data)).catch(() => {});
   const loadDemandes = () => api.get('/admin/demandes').then((r) => setDemandes(r.data)).catch(() => {});
   const loadNews = () => api.get('/admin/newsletter').then((r) => setNews(r.data)).catch(() => {});
+  const loadCampaigns = () => api.get('/admin/newsletter/campagnes').then((r) => setCampaigns(r.data)).catch(() => {});
+  const loadNewsOptions = () => Promise.all([
+    api.get('/admin/newsletter/ecrivains'),
+    api.get('/offres/gestion/mine'),
+  ]).then(([w, o]) => {
+    setWriters(w.data);
+    setOffers((o.data || []).filter((offre) => offre.statut === 'ouverte'));
+  }).catch(() => {});
 
   useEffect(() => { loadStats(); loadDemandes(); loadNews(); }, []); // eslint-disable-line react-hooks/exhaustive-deps
   useEffect(() => { loadUsers(); }, [filtre, statutFiltre, search]); // eslint-disable-line react-hooks/exhaustive-deps
+  useEffect(() => {
+    if (tab === 'news') { loadCampaigns(); loadNewsOptions(); }
+  }, [tab]); // eslint-disable-line react-hooks/exhaustive-deps
   useEffect(() => () => { if (pdfUrlRef.current) URL.revokeObjectURL(pdfUrlRef.current); }, []);
 
   const act = async (fn, okMessage) => {
@@ -71,6 +88,18 @@ export default function Admin() {
       setMsg({ ok: r.data.message });
     } catch (err) { setMsg({ err: errMsg(err) }); }
     finally { setAdminBusy(false); }
+  };
+
+  const submitNewsletter = async (payload) => {
+    setNewsBusy(true); setMsg(null);
+    try {
+      const r = await api.post('/admin/newsletter/envoyer', payload);
+      setComposerOpen(false);
+      const suffix = r.data.mode === 'log' ? ' Mode test : emails journalisés (SMTP non configuré).' : '';
+      setMsg({ ok: r.data.message + suffix });
+      loadNews(); loadCampaigns();
+    } catch (err) { setMsg({ err: errMsg(err) }); }
+    finally { setNewsBusy(false); }
   };
 
   const closePdf = () => {
@@ -257,16 +286,74 @@ export default function Admin() {
             </table>
           ))}
 
-      {tab === 'news' && (news === null
-        ? <Loader size={64} />
-        : news.length === 0
-          ? <p className="muted">Aucune inscription.</p>
-          : (
-            <table className="tbl">
-              <thead><tr><th>Email</th><th>Date</th></tr></thead>
-              <tbody>{news.map((n) => <tr key={n.id}><td>{n.email}</td><td className="muted">{date(n.created_at)}</td></tr>)}</tbody>
-            </table>
-          ))}
+      {tab === 'news' && (
+        <div className="news-wrap">
+          <div className="admin-toolbar news-header">
+            <div>
+              <h2>Newsletter</h2>
+              <p className="muted">Composez et envoyez un email aux {news ? news.length : '…'} inscrits.</p>
+            </div>
+            <button type="button" className="admin-btn primary" disabled={news !== null && news.length === 0}
+              onClick={() => { setMsg(null); setComposerOpen((v) => !v); }}>
+              <Icon name={composerOpen ? 'x' : 'mail'} size={15} /> {composerOpen ? 'Fermer le composeur' : 'Nouvelle campagne'}
+            </button>
+          </div>
+
+          {composerOpen && (
+            <NewsletterComposer
+              offers={offers}
+              writers={writers}
+              subscriberCount={news ? news.length : 0}
+              busy={newsBusy}
+              onSend={submitNewsletter}
+              onCancel={() => setComposerOpen(false)}
+            />
+          )}
+
+          <section className="news-section">
+            <div className="news-section-head">
+              <h3>Campagnes envoyées</h3>
+              <button type="button" className="link" onClick={() => { loadCampaigns(); loadNews(); }}>Actualiser</button>
+            </div>
+            {campaigns === null
+              ? <Loader size={48} />
+              : campaigns.length === 0
+                ? <p className="muted">Aucune campagne envoyée pour le moment.</p>
+                : (
+                  <table className="tbl">
+                    <thead><tr><th>Objet</th><th>Rubriques</th><th>Destinataires</th><th>Succès</th><th>Échecs</th><th>Mode</th><th>Date</th></tr></thead>
+                    <tbody>
+                      {campaigns.map((c) => (
+                        <tr key={c.id}>
+                          <td><b>{c.objet}</b><br /><span className="muted">{c.expediteur}</span></td>
+                          <td>{c.sections.length ? c.sections.join(' · ') : '—'}</td>
+                          <td>{c.destinataires}</td>
+                          <td>{c.succes}</td>
+                          <td>{c.echecs || '—'}</td>
+                          <td><span className={`tag ${c.mode === 'smtp' ? 'ok' : ''}`}>{c.mode}</span></td>
+                          <td className="muted">{date(c.created_at)}</td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                )}
+          </section>
+
+          <section className="news-section">
+            <div className="news-section-head"><h3>Inscrits</h3><span className="muted">{news ? news.length : '…'} adresse{news && news.length > 1 ? 's' : ''}</span></div>
+            {news === null
+              ? <Loader size={48} />
+              : news.length === 0
+                ? <p className="muted">Aucune inscription.</p>
+                : (
+                  <table className="tbl">
+                    <thead><tr><th>Email</th><th>Date</th></tr></thead>
+                    <tbody>{news.map((n) => <tr key={n.id}><td>{n.email}</td><td className="muted">{date(n.created_at)}</td></tr>)}</tbody>
+                  </table>
+                )}
+          </section>
+        </div>
+      )}
 
       {dossier && !pdfUrl && (
         <div className="admin-modal-bg" onMouseDown={(e) => e.target === e.currentTarget && closeDossier()}>
